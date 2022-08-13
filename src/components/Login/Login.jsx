@@ -1,6 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from 'react'
 import validator from 'validator'
-import { Container, Paper, Box, FormControl, IconButton, InputLabel, OutlinedInput, InputAdornment, FormHelperText, Button, TextField } from '@mui/material'
+import { Container, Paper, Box, FormControl, IconButton, InputLabel, OutlinedInput, InputAdornment, FormHelperText, TextField } from '@mui/material'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { useNavigate } from 'react-router-dom'
@@ -8,6 +8,8 @@ import UserContext from '../../context/UserContext'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { login } from '../../api/user'
 import { getCredentials, storeCredentials } from '../../config/storage'
+import LoadingButton from '@mui/lab/LoadingButton';
+
 
 const Login = () => {
   const { user, setUser } = useContext(UserContext)
@@ -17,6 +19,7 @@ const Login = () => {
   const [email, setEmail] = useState({ value: '', error: false, helperText: 'none' })
   const [password, setPassword] = useState({ value: '', error: false, helperText: 'none' })
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
+  const [connect, setConnect] = useState(false)
 
   const history = useNavigate()
 
@@ -43,10 +46,12 @@ const Login = () => {
     }
 
     if (haveError) return
+    setConnect(true)
 
     login({ email: email.value, password: password.value })
       .then((x) => x.json())
       .then((result) => {
+        setConnect(false)
         if (!result.success) {
           setErrorDialog({ show: true, message: result.message })
         } else {
@@ -103,7 +108,7 @@ const Login = () => {
           />
           <FormHelperText sx={{ color: password.error ? null : 'transparent' }}>{password.helperText}</FormHelperText>
         </FormControl>
-        <Button fullWidth variant='contained' onClick={loginToServer}>вход в системата</Button>
+        <LoadingButton fullWidth onClick={loginToServer} loading={connect} loadingIndicator='Connect to server ...' variant='contained'>вход в системата</LoadingButton>
       </Paper>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
     </Container>
