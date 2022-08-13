@@ -1,0 +1,36 @@
+@font-face {
+  font-family: 'CorsaGrotesk';
+  src: url('assets/fonts/CorsaGrotesk-Thin.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 100;
+}
+@font-face {
+  font-family: 'CorsaGrotesk';
+  src: url('assets/fonts/CorsaGrotesk-Light.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 300;
+}
+@font-face {
+  font-family: 'CorsaGrotesk';
+  src: url('assets/fonts/CorsaGrotesk-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'CorsaGrotesk';
+  src: url('assets/fonts/CorsaGrotesk-Medium.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'CorsaGrotesk';
+  src: url('assets/fonts/CorsaGrotesk-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+}
+@font-face {
+  font-family: 'Dusha';
+  src: url('assets/fonts/Dusha.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+}
