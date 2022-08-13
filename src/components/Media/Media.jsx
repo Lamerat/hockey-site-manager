@@ -15,7 +15,7 @@ import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove'
 import ShareIcon from '@mui/icons-material/Share'
 import EditIcon from '@mui/icons-material/Edit'
 import LockIcon from '@mui/icons-material/Lock'
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress'
 
 
 const PhotoComponent = ({row, imageSize}) => {

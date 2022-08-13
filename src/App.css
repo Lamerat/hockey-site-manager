@@ -34,3 +34,8 @@
   font-style: normal;
   font-weight: 400;
 }
+
+#root {
+  min-height: 100vh;
+  height: 100%;
+}
