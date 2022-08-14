@@ -16,6 +16,7 @@ import ShareIcon from '@mui/icons-material/Share'
 import EditIcon from '@mui/icons-material/Edit'
 import LockIcon from '@mui/icons-material/Lock'
 import CircularProgress from '@mui/material/CircularProgress'
+import { Scrollbars } from 'react-custom-scrollbars-2'
 
 
 const PhotoComponent = ({row, imageSize}) => {
@@ -71,7 +72,7 @@ const FolderComponent = ({row, currentFolder, setCurrentFolder}) => {
       onMouseEnter={() => setSelected(true)}
       onMouseLeave={() => setSelected(false)}
     >
-      <Box display='flex' alignItems='center' onClick={() => setCurrentFolder(row._id)}>
+      <Box display='flex' alignItems='center' width='100%' onClick={() => setCurrentFolder(row._id)}>
         <Box display='flex' alignItems='center' position='relative'>
           {
             currentFolder === row._id
@@ -179,7 +180,7 @@ const Media = () => {
           </Paper>
         </Grid>
         <Grid item xs={8}>
-          <Paper elevation={2} sx={{p: 2}}>
+          <Paper elevation={2} sx={{p: 2, pb: 0, maxHeight: 'calc(100vh - 150px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
             <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
               <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Албум 01</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
@@ -195,9 +196,11 @@ const Media = () => {
                 </Tooltip>
               </Box>
             </Box>
-            <Grid container spacing={2} >
-              { tempArray.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} />) }
-            </Grid>
+              <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16}} >
+                <Grid container spacing={2} sx={{pl: 2, pr: 2, pb: 2}}>
+                  { tempArray.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} />) }
+                </Grid>
+              </Scrollbars>
           </Paper>
         </Grid>
       </Grid>
