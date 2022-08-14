@@ -6,3 +6,8 @@ export const storeCredentials = (data) => {
 
 
 export const getCredentials = () => localStorage.getItem('token')
+
+export const cleanCredentials = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+}

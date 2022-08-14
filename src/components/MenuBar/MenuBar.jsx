@@ -22,6 +22,7 @@ const MenuBar = () => {
   const open = Boolean(anchorEl)
 
   const changeTabIndex = (_, newValue) => setShared({ ...shared, currentPage: newValue })
+
   const logOutFromServer = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -62,7 +63,7 @@ const MenuBar = () => {
         <ListItemText
           sx={{pl: 2, pr: 2 }}
           primary={user.name}
-          secondary={user.teams[0].name}
+          secondary={user.team.name}
           primaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk'}}}
           secondaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk'}}}
         />        

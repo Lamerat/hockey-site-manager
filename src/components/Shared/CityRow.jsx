@@ -5,10 +5,11 @@ import VerifiedIcon from '@mui/icons-material/Verified'
 import ShareIcon from '@mui/icons-material/Share'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
 import { menuPaperStyleSmall } from './RowStyles'
 
 
-const CityRow = ({row}) => {
+const CityRow = ({row, editFunction, deleteFunction}) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
   return (
@@ -17,10 +18,13 @@ const CityRow = ({row}) => {
         <Box p={1.5} pr={0}>{row.name}</Box>
         {
           row.canEdit
-            ? <IconButton size='small' ref={anchor} onClick={() => setOpenMenu(!openMenu)}><MoreVertIcon fontSize='small' color='primary' /></IconButton>
+            ? <Box display='flex' alignItems='center'>
+                { row.shared ? <Tooltip arrow title='Споделен'><ShareIcon sx={{ pr: '5px' }} fontSize='small' color='primary' /></Tooltip> : null }
+                <IconButton size='small' ref={anchor} onClick={() => setOpenMenu(!openMenu)}><MoreVertIcon fontSize='small' color='primary' /></IconButton>
+              </Box>
             : row.type === 'system'
               ? <Tooltip placement='right' arrow title='Системно добавен'><VerifiedIcon sx={{ pr: '5px' }} fontSize='small' color='primary' /></Tooltip>
-              : <Tooltip placement='right' arrow title='Споделен от друг потребител'><ShareIcon sx={{pr: '5px'}} fontSize='small' color='primary' /></Tooltip>
+              : <Tooltip placement='right' arrow title='Споделен от друг потребител'><PeopleAltIcon sx={{pr: '5px'}} fontSize='small' color='primary' /></Tooltip>
         }
       </Box>
       <Menu
@@ -33,9 +37,9 @@ const CityRow = ({row}) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1} >
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> editFunction(row._id)} >
           <ListItemIcon><EditIcon fontSize='small' color='primary'/></ListItemIcon>Редактирай</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> deleteFunction(row._id, row.name)}>
           <ListItemIcon><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
       </Menu>
     </Paper>
