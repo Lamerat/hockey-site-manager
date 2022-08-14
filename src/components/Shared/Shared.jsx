@@ -216,7 +216,10 @@ const Shared = () => {
               <Box width='65%'>Име</Box>
               <Box width='35%'>Град</Box>
             </Stack>
-            <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16}}>
+            <Scrollbars
+              style={{height: '100vh', padding: 16, marginLeft: -16}}
+              renderThumbVertical={() =><div style={{backgroundColor: mainTheme.palette.primary.light, borderRadius: 'inherit', cursor: 'pointer'}}/>}
+            >
               {
                 teams
                   ? teams.length
