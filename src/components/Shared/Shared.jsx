@@ -5,7 +5,9 @@ import mainTheme from '../../theme/MainTheme'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import CircularProgress from '@mui/material/CircularProgress'
 import { Scrollbars } from 'react-custom-scrollbars-2'
-
+import CityRow from './CityRow'
+import ArenaRow from './ArenaRow'
+import TeamRow from './TeamRow'
 
 const cityTemp = [
   { 
@@ -16,7 +18,28 @@ const cityTemp = [
     "createdAt" : "2022-08-13T10:23:14.814+0000", 
     "updatedAt" : "2022-08-13T10:23:14.814+0000", 
     "createdBy" : "62f774dfe4fbb6c1f9839b73",
-  }
+    "canEdit": false,
+  },
+  { 
+    "_id" :"62f77b929dbb03e5eff3das587b", 
+    "name" : "Велико Търново", 
+    "type" : "system", 
+    "shared" : false, 
+    "createdAt" : "2022-08-13T10:23:14.814+0000", 
+    "updatedAt" : "2022-08-13T10:23:14.814+0000", 
+    "createdBy" : "62f774dfe4fbb6c1f9839b73",
+    "canEdit": true,
+  },
+  { 
+    "_id" :"62f77b929dbb03e5eff33587b", 
+    "name" : "Перник", 
+    "type" : "system2", 
+    "shared" : false, 
+    "createdAt" : "2022-08-13T10:23:14.814+0000", 
+    "updatedAt" : "2022-08-13T10:23:14.814+0000", 
+    "createdBy" : "62f774dfe4fbb6c1f9839b73",
+    "canEdit": false,
+  },
 ]
 
 const arenasTemp = [
@@ -29,6 +52,29 @@ const arenasTemp = [
     "createdAt" : "2022-08-13T10:23:14.814+0000", 
     "updatedAt" : "2022-08-13T10:23:14.814+0000", 
     "createdBy" : "62f774dfe4fbb6c1f9839b73",
+    "canEdit": false,
+  },
+  { 
+    "_id" :"62f77b929dbb03e5efdf35816", 
+    "name" : "Ледена пързалка Славия", 
+    "type" : "system", 
+    "city": { name: 'София' },
+    "shared" : false, 
+    "createdAt" : "2022-08-13T10:23:14.814+0000", 
+    "updatedAt" : "2022-08-13T10:23:14.814+0000", 
+    "createdBy" : "62f774dfe4fbb6c1f9839b73",
+    "canEdit": true,
+  },
+  { 
+    "_id" :"62f77b929dddbb03e5efdf35816", 
+    "name" : "Някаква пързалка", 
+    "type" : "dasdassd", 
+    "city": { name: 'София' },
+    "shared" : false, 
+    "createdAt" : "2022-08-13T10:23:14.814+0000", 
+    "updatedAt" : "2022-08-13T10:23:14.814+0000", 
+    "createdBy" : "62f774dfe4fbb6c1f9839b73",
+    "canEdit": false,
   }
 ]
 
@@ -42,20 +88,21 @@ const tempTeams = [
     "shared" : false    
   },
   { 
-    "_id" : "62f77ca15f4578ea5e2fbed89", 
+    "_id" : "62f77ca15f4578ea5e2fbded89", 
     "name" : "НСА", 
     "city" : { name: 'София' }, 
     "logo" : "https://lamerat.github.io/ChervenaZvezda/images/nsa.jpg", 
-    "type" : "system",
+    "type" : "syste2m",
     "shared" : false    
   },
   { 
-    "_id" : "62f77ca15f4578ea522efbed89", 
+    "_id" : "62f77ca15f4578ea522efbed8ccs9", 
     "name" : "Торпедо", 
     "city" : { name: 'София' }, 
     "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Torpedo.png", 
     "type" : "system",
-    "shared" : false    
+    "shared" : false ,   
+    "canEdit": true,
   }
 ]
 
@@ -66,44 +113,6 @@ for (let i = 0; i < 20; i++) {
 }
 
 
-const CityRow = ({row}) => {
-  return (
-    <Paper elevation={1} sx={{ mb: 0.5, mt: 0.5, ml: 2, mr: 2, p: 1.5, boxSizing: 'border-box' }}>
-      <Stack direction='row' alignItems='center' minHeight={20}>
-        <Box width='100%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.name}</Box>
-      </Stack>
-    </Paper>
-  )
-}
-
-const ArenaRow = ({row}) => {
-  return (
-    <Paper elevation={1} sx={{ mb: 0.5, mt: 0.5, ml: 2, mr: 2, p: 1.5, boxSizing: 'border-box' }}>
-      <Stack direction='row' alignItems='center' minHeight={20}>
-        <Box width='65%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.name}</Box>
-        <Box width='35%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.city.name}</Box>
-      </Stack>
-    </Paper>
-  )
-}
-
-const TeamRow = ({row}) => {
-  return (
-    <Paper elevation={1} sx={{ mb: 0.5, mt: 0.5, ml: 2, mr: 2 }}>
-      <Stack
-        direction='row'
-        alignItems='center'
-        minHeight={20}
-        sx={{ mt: 1, p: 1.5, position: 'relative', overflow: 'hidden' }}
-      > 
-        <Box width='65%' fontFamily='CorsaGrotesk' fontSize='14px' zIndex={2}>{row.name}</Box>
-        <Box width='35%' fontFamily='CorsaGrotesk' fontSize='14px' zIndex={2}>{row.city.name}</Box>
-        <Box sx={{position: 'absolute', width: '100%', height: '100%', background: `url(${row.logo})`, backgroundRepeat: 'no-repeat', backgroundSize: '200px', opacity: '10%', backgroundPosition: 'right' }}/>
-      </Stack>
-    </Paper>
-  )
-}
-
 const Shared = () => {
   const { setShared } = useContext(SharedContext)
   const firstRenderRef = useRef(true)
@@ -111,6 +120,13 @@ const Shared = () => {
   const [cities, setCities] = useState(null)
   const [arenas, setArenas] = useState(null)
   const [teams, setTeams] = useState(null)
+
+
+  const handlePagination = (scrollTop, height, scrollHeight) => {
+    if (scrollTop + height >= scrollHeight - 20) {
+      console.log('OK')
+    }
+  }
   
   useEffect(() => {
     if(firstRenderRef.current) {
@@ -143,7 +159,10 @@ const Shared = () => {
             <Stack direction='row' pt={1} pb={1} pl={1.5} pr={1.5} minHeight={20} fontFamily='CorsaGrotesk' fontWeight='bold' fontSize='14px'>
               <Box width='100%'>Име</Box>
             </Stack>
-            <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16, color: 'red'}}>
+            <Scrollbars
+              style={{height: '100vh', padding: 16, marginLeft: -16}}
+              onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
+            >
               {
                 cities
                   ? cities.length
@@ -166,11 +185,11 @@ const Shared = () => {
                 </Tooltip>
               </Box>
             </Box>
-            <Stack direction='row' pt={1} pb={1} pl={1.5} pr={1.5} minHeight={20} fontFamily='CorsaGrotesk' fontWeight='bold' fontSize='14px'>
+            <Stack direction='row' pt={1} pb={1} pl={1.5} pr={1.5} width='calc(100% - 46px)' minHeight={20} fontFamily='CorsaGrotesk' fontWeight='bold' fontSize='14px' >
               <Box width='65%'>Име</Box>
               <Box width='35%'>Град</Box>
             </Stack>
-            <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16, color: 'red'}}>
+            <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16}} >
               {
                 arenas
                   ? arenas.length
@@ -193,7 +212,7 @@ const Shared = () => {
                 </Tooltip>
               </Box>
             </Box>
-            <Stack direction='row' pt={1} pb={1} pl={1.5} pr={1.5} minHeight={20} fontFamily='CorsaGrotesk' fontWeight='bold' fontSize='14px'>
+            <Stack direction='row' pt={1} pb={1} pl={1.5} pr={1.5} width='calc(100% - 46px)' minHeight={20} fontFamily='CorsaGrotesk' fontWeight='bold' fontSize='14px'>
               <Box width='65%'>Име</Box>
               <Box width='35%'>Град</Box>
             </Stack>

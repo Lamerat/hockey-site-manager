@@ -60,7 +60,7 @@ const Login = () => {
         }
       })
       .catch((error) => {
-        console.log(error.message)
+        setErrorDialog({ show: true, message: error.message })
       })
   }
 
