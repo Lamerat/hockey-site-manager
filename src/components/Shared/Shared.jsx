@@ -28,11 +28,14 @@ const tempTeams = [
   { "_id" : "62f77ca15f4578ea32f8d","name" : "Червена звезда","city" : { name: 'Велико Търново' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : true , "canEdit": true }
 ]
 
+
 const Shared = () => {
   const { setShared } = useContext(SharedContext)
   const { user } = useContext(UserContext)
 
-  const firstRenderRef = useRef(true)
+  const firstRenderSharedRef = useRef(true)
+  const firstRenderCityRef = useRef(true)
+  const firstRenderArenaRef = useRef(true)
 
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
@@ -43,20 +46,70 @@ const Shared = () => {
   const [showAddArenaDialog, setShowAddArenaDialog] = useState(false)
   const [showEditCityDialog, setShowEditCityDialog] = useState({ show: false, data: {} })
   const [showEditArenaDialog, setShowEditArenaDialog] = useState({ show: false, data: {} })
+  const [arenaQuery, setArenaQuery] = useState({ page: 1, hasNextPage: false })
+  const [reload, setReload] = useState(true)
 
   const history = useNavigate()
-  const newCities = []
-  const newArenas = []
+
+  useEffect(() => {
+    if(firstRenderCityRef.current) {
+      firstRenderCityRef.current = false
+      return
+    }
+
+    const authError = () => {
+      cleanCredentials()
+      history('/')
+    }
+
+    listCities()
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setCities(result.payload.docs)
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }, [history])
+
+
+  useEffect(() => {
+    if(firstRenderArenaRef.current) {
+      firstRenderArenaRef.current = false
+      return
+    }
+
+    const authError = () => {
+      cleanCredentials()
+      history('/')
+    }
+
+    listArenas({ pageNumber: arenaQuery.page, pageSize: 20 })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setArenas(arenas => arenaQuery.page === 1 ? result.payload.docs : [ ...arenas, ...result.payload.docs])
+        setArenaQuery({ page: result.payload.page, hasNextPage: result.payload.hasNextPage })
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }, [history, arenaQuery.page, reload])
+
+
+  const handlePagination = (scrollTop, height, scrollHeight) => {
+    if (scrollTop + height >= scrollHeight - 20) {
+      if (arenaQuery.hasNextPage) setArenaQuery({ page: arenaQuery.page + 1 })
+    }
+  }
+
 
   const authError = () => {
     cleanCredentials()
     history('/')
-  }
-
-  const handlePagination = (scrollTop, height, scrollHeight) => {
-    if (scrollTop + height >= scrollHeight - 20) {
-      console.log('OK')
-    }
   }
 
 
@@ -74,6 +127,7 @@ const Shared = () => {
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
+
   const deleteArenaFunc = (arenaId) => {
     setConfirmDialog({ show: false, message: '' })
     deleteArena(arenaId)
@@ -88,8 +142,10 @@ const Shared = () => {
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
+
   const prepareDeleteCity = (cityId, name) => setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете град ${name}`, acceptFunc: () => deleteCityFunc(cityId) })
   const prepareDeleteArena = (arenaId, name) => setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете пързалка ${name}`, acceptFunc: () => deleteArenaFunc(arenaId) })
+
 
   const prepareEditCity = (cityId) => {
     singleCity(cityId)
@@ -149,46 +205,6 @@ const Shared = () => {
   }
 
 
-  useEffect(() => {
-    if(firstRenderRef.current) {
-      firstRenderRef.current = false
-      return
-    }
-
-    const authError = () => {
-      cleanCredentials()
-      history('/')
-    }
-    console.log('SHARED RENDER')
-
-    listCities()
-      .then(x => {
-        if (x.status === 401) authError()
-        return x.json()
-      })
-      .then(result => {
-        if (!result.success) throw new Error(result.message)
-        setCities(result.payload.docs)
-      })
-      .catch(error => setErrorDialog({ show: true, message: error.message }))
-
-    listArenas()
-      .then(x => {
-        if (x.status === 401) authError()
-        return x.json()
-      })
-      .then(result => {
-        if (!result.success) throw new Error(result.message)
-        setArenas(result.payload.docs)
-      })
-      .catch(error => setErrorDialog({ show: true, message: error.message }))
-    
-    
-    setTeams(tempTeams)
-    setShared(shared => ({ ...shared, currentPage: 4 }))
-  }, [setShared, history])
-
-
   const createNewCity = (city) => {
     createCity(city)
     .then(x => {
@@ -198,11 +214,11 @@ const Shared = () => {
     .then(result => {
       if (!result.success) throw new Error(result.message)
       setShowAddCityDialog(false)
-      newCities.push(result.payload._id)
       setCities([result.payload, ...cities])
     })
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
+
 
   const createNewArena = (arena) => {
     createArena(arena)
@@ -213,11 +229,22 @@ const Shared = () => {
     .then(result => {
       if (!result.success) throw new Error(result.message)
       setShowAddArenaDialog(false)
-      newArenas.push(result.payload._id)
       setArenas([result.payload, ...arenas])
+      setReload(!reload)
     })
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
+
+
+  useEffect(() => {
+    if(firstRenderSharedRef.current) {
+      firstRenderSharedRef.current = false
+      return
+    }
+    setTeams(tempTeams)
+    setShared(shared => ({ ...shared, currentPage: 4 }))
+  }, [setShared])
+
 
   if (!user || !getCredentials()) return null
 
@@ -269,7 +296,10 @@ const Shared = () => {
               <Box width='60%'>Име</Box>
               <Box width='40%'>Град</Box>
             </Stack>
-            <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16}} >
+            <Scrollbars
+              style={{height: '100vh', padding: 16, marginLeft: -16}}
+              onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
+            >
               {
                 arenas
                   ? arenas.length
