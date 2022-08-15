@@ -16,6 +16,7 @@ import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import AddCityDialog from './AddCityDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import EditCityDialog from './EditCityDialog'
+import AddArenaDialog from './AddArenaDialog'
 
 
 const arenasTemp = [
@@ -49,6 +50,7 @@ const Shared = () => {
   const [arenas, setArenas] = useState(null)
   const [teams, setTeams] = useState(null)
   const [showAddCityDialog, setShowAddCityDialog] = useState(false)
+  const [showAddArenaDialog, setShowAddArenaDialog] = useState(false)
   const [showEditCityDialog, setShowEditCityDialog] = useState({ show: false, data: {} })
 
   const history = useNavigate()
@@ -155,6 +157,10 @@ const Shared = () => {
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
+  const createNewArena = (arena) => {
+    console.log(arena)
+  }
+
   if (!user || !getCredentials()) return null
 
   return (
@@ -195,7 +201,7 @@ const Shared = () => {
               <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Пързалки</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
                 <Tooltip title='Добави нова' arrow>
-                  <IconButton onClick={(e) => 1}>
+                  <IconButton onClick={() => setShowAddArenaDialog(true)}>
                     <LibraryAddIcon color='secondary' />
                   </IconButton>
                 </Tooltip>
@@ -251,6 +257,7 @@ const Shared = () => {
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       { showEditCityDialog.show ? < EditCityDialog data={showEditCityDialog.data} closeFunc={setShowEditCityDialog} actionFunc={EditCityFunc} /> : null }
+      { showAddArenaDialog ? <AddArenaDialog closeFunc={setShowAddArenaDialog} actionFunc={createNewArena} /> : null }
     </Container>
   )
 }
