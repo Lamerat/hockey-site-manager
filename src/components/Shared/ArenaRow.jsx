@@ -9,7 +9,7 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
 import { menuPaperStyleSmall } from './RowStyles'
 
 
-const ArenaRow = ({row}) => {
+const ArenaRow = ({row, editFunction, deleteFunction}) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
   return (
@@ -17,7 +17,7 @@ const ArenaRow = ({row}) => {
       <Box display='flex' justifyContent='space-between' alignItems='center' >
         <Stack direction='row' alignItems='center' minHeight={20} width='calc(100% - 72px)' p={1.5} pr={0}>
           <Box width='60%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.name}</Box>
-          <Box width='40%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.city.name}</Box>
+          <Box width='40%' fontFamily='CorsaGrotesk' fontSize='14px'>{row?.city.name}</Box>
         </Stack>
         {
           row.canEdit
@@ -40,9 +40,9 @@ const ArenaRow = ({row}) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1} >
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> editFunction(row._id)}>
           <ListItemIcon><EditIcon fontSize='small' color='primary'/></ListItemIcon>Редактирай</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> deleteFunction(row._id, row.name)}>
           <ListItemIcon><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
       </Menu>
     </Paper>

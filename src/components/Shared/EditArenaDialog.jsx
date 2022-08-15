@@ -10,26 +10,29 @@ import { Box, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { listCities } from '../../api/city'
 import CircularProgress from '@mui/material/CircularProgress'
+import moment from 'moment'
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
 })
 
-const AddArenaDialog = ({actionFunc, closeFunc}) => {
+const EditArenaDialog = ({data, actionFunc, closeFunc}) => {
   const firstRenderRef = useRef(true)
 
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [cities, setCities] = useState(null)
   const [arena, setArena] = useState({ name: '', city: null, shared: false })
 
+  const lastUpdate = moment(data?.updatedAt).format('DD-MM-YYYY г.').toString()
+
   const changeState = (value, field) => setArena({ ...arena, [field]: value })
 
-  const addNewArena = () => {
+  const updateArena = () => {
     if (!arena.name.trim()) {
       setErrorDialog({ show: true, message: 'Липсва името на пързалката' })
       return
     }
-    actionFunc(arena)
+    actionFunc(data._id, arena)
   }
 
   useEffect(() => {
@@ -43,20 +46,22 @@ const AddArenaDialog = ({actionFunc, closeFunc}) => {
       .then(result => {
         if (!result.success) throw new Error(result.message)
         setCities(result.payload.docs)
-        setArena( arena => ({ ...arena, city: result.payload.docs[0]._id }))
+        setArena({ name: data.name, shared: data.shared, city: data.city._id })
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }, [])  
+  }, [data])
 
 
   return (
     <Dialog open={true} TransitionComponent={Transition} keepMounted>
       <Box sx={{ p: 3, pb: 0, mb: 0.5 }}>
-        <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.primary.main} variant='h6' pb={0.5}>Добавяне на нова пързалка</Typography>
+        <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.primary.main} variant='h6' pb={2}>Редактиране на пързалка</Typography>
       </Box>
       {
         cities
           ? <>
+              <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.primary.main} variant='body2' pl={3} pb={1}><b>Създал:</b> {data?.createdBy.name}</Typography>
+              <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.primary.main} variant='body2' pl={3} pb={3}><b>Последна редакция:</b> {lastUpdate}</Typography>
               <Box sx={{pl: 3, pr: 3}}>
                 <TextField
                   label='Име на пързалката'
@@ -80,11 +85,11 @@ const AddArenaDialog = ({actionFunc, closeFunc}) => {
                 />
                 <Box ml={6}>
                   <Button variant='contained' color='secondary' onClick={() => closeFunc(false)}>Затвори</Button>
-                  <Button variant='contained' sx={{ml: 1}} onClick={addNewArena}>Добави</Button>
+                  <Button variant='contained' sx={{ml: 1}} onClick={updateArena}>Редактирай</Button>
                 </Box>
               </Box>
             </> 
-          : <Box minHeight={218} width={440} display='flex' alignItems='center' justifyContent='center'><CircularProgress size='100px'/></Box>
+          : <Box minHeight={290} width={475} display='flex' alignItems='center' justifyContent='center'><CircularProgress size='100px'/></Box>
       }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
     </Dialog>
@@ -92,4 +97,4 @@ const AddArenaDialog = ({actionFunc, closeFunc}) => {
 }
 
 
-export default AddArenaDialog
+export default EditArenaDialog

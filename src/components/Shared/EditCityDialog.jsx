@@ -23,7 +23,7 @@ const EditCityDialog = ({data, actionFunc, closeFunc}) => {
 
   const lastUpdate = moment(data?.updatedAt).format('DD-MM-YYYY г.').toString()
 
-  const addNewCity = () => {
+  const updateCity = () => {
     if (!city.name.trim()) {
       setErrorDialog({ show: true, message: 'Липсва името на града' })
       return
@@ -55,7 +55,7 @@ const EditCityDialog = ({data, actionFunc, closeFunc}) => {
         />
         <Box ml={5}>
           <Button variant='contained' color='secondary' onClick={() => closeFunc({ show: false, data: {} })}>Затвори</Button>
-          <Button variant='contained' sx={{ml: 1}} onClick={addNewCity}>Редактирай</Button>
+          <Button variant='contained' sx={{ml: 1}} onClick={updateCity}>Редактирай</Button>
         </Box>
       </Box>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }

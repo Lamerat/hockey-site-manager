@@ -17,26 +17,16 @@ import AddCityDialog from './AddCityDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import EditCityDialog from './EditCityDialog'
 import AddArenaDialog from './AddArenaDialog'
+import { listArenas, createArena, deleteArena, singleArena, editArena } from '../../api/arena'
+import EditArenaDialog from './EditArenaDialog'
 
-
-const arenasTemp = [
-  { "_id" :"62f77b929dbb03e5eff35816", "name" : "Зимен дворец на спорта", "type" : "sy2stem", "city": { name: 'София' }, shared: true, "canEdit": true },
-  { "_id" :"62f77b929dbb03e5edasdff35816", "name" : "Зимен дворец на спорта", "type" : "sy2stem", "city": { name: 'Велико Търново' }, shared: true, "canEdit": true },
-  { "_id" :"62f77b929dbb3203e5eff35816", "name" : "Зимен дворец на спорта", "type" : "system", "city": { name: 'Ботевград' }, shared: false, "canEdit": false },
-  { "_id" :"62f77b929dbb03e5ef2323f35816", "name" : "Зимен дворец на спорта", "type" : "sys2tem", "city": { name: 'София' }, shared: true, "canEdit": false },
-]
 const tempTeams = [
   { "_id" : "62f77ca15f4578ea5efbed89","name" : "Червена звезда","city" : { name: 'София' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "syste2m", "shared" : true , "canEdit": true },
   { "_id" : "62f77ca15f4578ea5efbed8d","name" : "Червена звезда","city" : { name: 'София' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "system", "shared" : true , "canEdit": false },
   { "_id" : "62f77ca15f4578ea5ef8d","name" : "Червена звезда","city" : { name: 'София' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : false , "canEdit": true },
-  { "_id" : "62f77ca15f4578ea3232335ef8d","name" : "Червена звезда","city" : { name: 'Велико Търново' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : true , "canEdit": false },
+  { "_id" : "62f77ca15f4578ea3232335ef8d","name" : "Нещо си","city" : { name: 'Велико Търново' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : true , "canEdit": false },
   { "_id" : "62f77ca15f4578ea32f8d","name" : "Червена звезда","city" : { name: 'Велико Търново' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : true , "canEdit": true }
 ]
-
-for (let i=0; i < 30; i++) {
-  arenasTemp.push({...arenasTemp[0], _id: i})
-}
-
 
 const Shared = () => {
   const { setShared } = useContext(SharedContext)
@@ -52,9 +42,11 @@ const Shared = () => {
   const [showAddCityDialog, setShowAddCityDialog] = useState(false)
   const [showAddArenaDialog, setShowAddArenaDialog] = useState(false)
   const [showEditCityDialog, setShowEditCityDialog] = useState({ show: false, data: {} })
+  const [showEditArenaDialog, setShowEditArenaDialog] = useState({ show: false, data: {} })
 
   const history = useNavigate()
   const newCities = []
+  const newArenas = []
 
   const authError = () => {
     cleanCredentials()
@@ -82,7 +74,22 @@ const Shared = () => {
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
+  const deleteArenaFunc = (arenaId) => {
+    setConfirmDialog({ show: false, message: '' })
+    deleteArena(arenaId)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setArenas(arenas.filter(x => x._id !== result.payload._id))
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
   const prepareDeleteCity = (cityId, name) => setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете град ${name}`, acceptFunc: () => deleteCityFunc(cityId) })
+  const prepareDeleteArena = (arenaId, name) => setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете пързалка ${name}`, acceptFunc: () => deleteArenaFunc(arenaId) })
 
   const prepareEditCity = (cityId) => {
     singleCity(cityId)
@@ -93,6 +100,35 @@ const Shared = () => {
     .then(result => {
       if (!result.success) throw new Error(result.message)
       setShowEditCityDialog({ show: true, data: result.payload })
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const EditArenaFunc = (arenaId, payload) => {
+    editArena(arenaId, payload)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setShowEditArenaDialog({ show: false, data: {} })
+      setArenas(arenas.map(x => x._id === result.payload._id ? result.payload : x))
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const prepareEditArena = (arenaId) => {
+    singleArena(arenaId)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setShowEditArenaDialog({ show: true, data: result.payload })
     })
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -135,8 +171,19 @@ const Shared = () => {
         setCities(result.payload.docs)
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
+
+    listArenas()
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setArenas(result.payload.docs)
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
     
-    setArenas(arenasTemp)
+    
     setTeams(tempTeams)
     setShared(shared => ({ ...shared, currentPage: 4 }))
   }, [setShared, history])
@@ -158,7 +205,18 @@ const Shared = () => {
   }
 
   const createNewArena = (arena) => {
-    console.log(arena)
+    createArena(arena)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setShowAddArenaDialog(false)
+      newArenas.push(result.payload._id)
+      setArenas([result.payload, ...arenas])
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
   if (!user || !getCredentials()) return null
@@ -215,7 +273,7 @@ const Shared = () => {
               {
                 arenas
                   ? arenas.length
-                    ? arenas.map(x => <ArenaRow key={x._id} row={x} /> )
+                    ? arenas.map(x => <ArenaRow key={x._id} row={x} editFunction={prepareEditArena} deleteFunction={prepareDeleteArena} /> )
                     : null
                   : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
               }
@@ -253,11 +311,12 @@ const Shared = () => {
           </Paper>
         </Grid>
       </Grid>
-      { showAddCityDialog ? <AddCityDialog closeFunc={setShowAddCityDialog} actionFunc={createNewCity} /> : null }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
-      { showEditCityDialog.show ? < EditCityDialog data={showEditCityDialog.data} closeFunc={setShowEditCityDialog} actionFunc={EditCityFunc} /> : null }
+      { showAddCityDialog ? <AddCityDialog closeFunc={setShowAddCityDialog} actionFunc={createNewCity} /> : null }
       { showAddArenaDialog ? <AddArenaDialog closeFunc={setShowAddArenaDialog} actionFunc={createNewArena} /> : null }
+      { showEditCityDialog.show ? < EditCityDialog data={showEditCityDialog.data} closeFunc={setShowEditCityDialog} actionFunc={EditCityFunc} /> : null }
+      { showEditArenaDialog.show ? <EditArenaDialog data={showEditArenaDialog.data} closeFunc={setShowEditArenaDialog} actionFunc={EditArenaFunc} /> : null }
     </Container>
   )
 }
