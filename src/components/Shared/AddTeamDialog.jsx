@@ -10,6 +10,7 @@ import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Stack } fro
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { listCities } from '../../api/city'
 import CircularProgress from '@mui/material/CircularProgress'
+import { uploadFiles } from '../../api/files'
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
@@ -18,11 +19,9 @@ const Transition = forwardRef(function Transition(props, ref) {
 const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
   const firstRenderRef = useRef(true)
 
-  const [file, setFile] = useState(undefined)
-
   const [errorDialog, setErrorDialog] = useState(editMode ? data : { show: false, message: '' })
   const [cities, setCities] = useState(null)
-  const [team, setTeam] = useState({ name: '', city: null, shared: false })
+  const [team, setTeam] = useState({ name: '', city: null, shared: false, logo: null })
 
   const changeState = (value, field) => setTeam({ ...team, [field]: value })
 
@@ -31,7 +30,7 @@ const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
       setErrorDialog({ show: true, message: 'Липсва името на отбора' })
       return
     }
-    // actionFunc(team)
+    actionFunc(team)
   }
 
   useEffect(() => {
@@ -53,25 +52,18 @@ const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
   }, [data, editMode])
 
 
-  const uploadFile = (fileName) => {
+  const fileUploadAction = (file) => {
+    if (!file || !file.length) return
+    setTeam({ ...team, logo: false })
     const formData = new FormData()
-
-    formData.append('key', '6d207e02198a847aa98d0a2a901485a5')
-    formData.append('format', 'json')
-    formData.append('source', fileName[0])
-    
-
-    fetch(`https://freeimage.host/api/1/upload`,{
-      method: 'POST',
-      headers: { "Access-Control-Allow-Origin": "*", 'Content-Type': 'application/json' },
-      body: formData,
-    })
+    formData.append('images', file[0])
+    uploadFiles(formData)
       .then(x => x.json())
-      .then(result => console.log(result))
-      .catch(e => console.log(e.message))
-
-    
-
+      .then(result => setTeam({ ...team, logo: result.payload[0].url }))
+      .catch(error => {
+        setTeam({ ...team, logo: null })
+        setErrorDialog({ show: true, message: error.message })
+      })
   }
 
 
@@ -84,8 +76,15 @@ const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
         cities
           ? <>
               <Stack direction='row' sx={{pl: 3, pr: 3, mt: 1}} spacing={4}>
-                <Box minWidth='200px' maxHeight='200px' border='1px solid black'>
-                  logo
+                <Box maxWidth='200px' width='200px' maxHeight='200px' border='1px solid lightgray' display='flex' alignItems='center' justifyContent='center' overflow='hidden'>
+                  {
+                    team.logo
+                      ? <img src={team.logo} height='200' alt='logo' />
+                      : team.logo === null
+                        ? <Box fontFamily='CorsaGrotesk' fontSize='14px' p={3} textAlign='center'>препоръчителен размер на файла 500 х 500 пиксела</Box>
+                        : <CircularProgress size='100px'/>
+                  }
+                  
                 </Box>
                 <Box display='flex' flexDirection='column' justifyContent='space-between' minWidth='300px' minHeight='210px'>
                   <TextField
@@ -110,7 +109,7 @@ const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3 }}>
               <Button variant='contained' component='label'>
                 Избери лого
-                <input hidden accept='image/*' type='file' value={file} onChange={(e) => uploadFile(e.target.files)} />
+                <input hidden accept='image/*' type='file' onChange={(e) => fileUploadAction(e.target.files)} />
               </Button>
                   <Box ml={6}>
                     <Button variant='contained' color='secondary' onClick={() => closeFunc(false)}>Затвори</Button>
@@ -118,7 +117,7 @@ const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
                   </Box>
                 </Box>
             </>
-          : <Box minHeight={218} width={440} display='flex' alignItems='center' justifyContent='center'><CircularProgress size='100px'/></Box>
+          : <Box height={306} width={582} display='flex' alignItems='center' justifyContent='center'><CircularProgress size='100px'/></Box>
       }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
     </Dialog>

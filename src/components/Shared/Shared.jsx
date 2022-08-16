@@ -45,6 +45,7 @@ const Shared = () => {
   const [teams, setTeams] = useState(null)
   const [showAddCityDialog, setShowAddCityDialog] = useState(false)
   const [showAddArenaDialog, setShowAddArenaDialog] = useState(false)
+  const [showAddTeamDialog, setShowAddTeamDialog] = useState(false)
   const [showEditCityDialog, setShowEditCityDialog] = useState({ show: false, data: {} })
   const [showEditArenaDialog, setShowEditArenaDialog] = useState({ show: false, data: {} })
   const [arenaQuery, setArenaQuery] = useState({ page: 1, hasNextPage: false })
@@ -247,6 +248,11 @@ const Shared = () => {
   }
 
 
+  const createNewTeam = (team) => {
+    console.log(team)
+  }
+
+
   useEffect(() => {
     if(firstRenderSharedRef.current) {
       firstRenderSharedRef.current = false
@@ -327,7 +333,7 @@ const Shared = () => {
               <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Отбори</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
                 <Tooltip title='Добави нов' arrow>
-                  <IconButton onClick={(e) => 1}>
+                  <IconButton onClick={() => setShowAddTeamDialog(true)}>
                     <LibraryAddIcon color='secondary' />
                   </IconButton>
                 </Tooltip>
@@ -358,7 +364,7 @@ const Shared = () => {
       { showAddArenaDialog ? <AddArenaDialog closeFunc={setShowAddArenaDialog} actionFunc={createNewArena} /> : null }
       { showEditCityDialog.show ? < EditCityDialog data={showEditCityDialog.data} closeFunc={setShowEditCityDialog} actionFunc={EditCityFunc} /> : null }
       { showEditArenaDialog.show ? <EditArenaDialog data={showEditArenaDialog.data} closeFunc={setShowEditArenaDialog} actionFunc={EditArenaFunc} /> : null }
-      < AddTeamDialog />
+      { showAddTeamDialog ? <AddTeamDialog closeFunc={setShowAddTeamDialog} actionFunc={createNewTeam} editMode={false} /> : null }
     </Container>
   )
 }
