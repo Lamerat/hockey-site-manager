@@ -19,6 +19,7 @@ import EditCityDialog from './EditCityDialog'
 import AddArenaDialog from './AddArenaDialog'
 import { listArenas, createArena, deleteArena, singleArena, editArena } from '../../api/arena'
 import EditArenaDialog from './EditArenaDialog'
+import AddTeamDialog from './AddTeamDialog'
 
 const tempTeams = [
   { "_id" : "62f77ca15f4578ea5efbed89","name" : "Червена звезда","city" : { name: 'София' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "syste2m", "shared" : true , "canEdit": true },
@@ -357,6 +358,7 @@ const Shared = () => {
       { showAddArenaDialog ? <AddArenaDialog closeFunc={setShowAddArenaDialog} actionFunc={createNewArena} /> : null }
       { showEditCityDialog.show ? < EditCityDialog data={showEditCityDialog.data} closeFunc={setShowEditCityDialog} actionFunc={EditCityFunc} /> : null }
       { showEditArenaDialog.show ? <EditArenaDialog data={showEditArenaDialog.data} closeFunc={setShowEditArenaDialog} actionFunc={EditArenaFunc} /> : null }
+      < AddTeamDialog />
     </Container>
   )
 }
