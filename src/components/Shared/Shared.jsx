@@ -20,14 +20,7 @@ import AddArenaDialog from './AddArenaDialog'
 import { listArenas, createArena, deleteArena, singleArena, editArena } from '../../api/arena'
 import EditArenaDialog from './EditArenaDialog'
 import AddTeamDialog from './AddTeamDialog'
-
-const tempTeams = [
-  { "_id" : "62f77ca15f4578ea5efbed89","name" : "Червена звезда","city" : { name: 'София' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "syste2m", "shared" : true , "canEdit": true },
-  { "_id" : "62f77ca15f4578ea5efbed8d","name" : "Червена звезда","city" : { name: 'София' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "system", "shared" : true , "canEdit": false },
-  { "_id" : "62f77ca15f4578ea5ef8d","name" : "Червена звезда","city" : { name: 'София' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : false , "canEdit": true },
-  { "_id" : "62f77ca15f4578ea3232335ef8d","name" : "Нещо си","city" : { name: 'Велико Търново' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : true , "canEdit": false },
-  { "_id" : "62f77ca15f4578ea32f8d","name" : "Червена звезда","city" : { name: 'Велико Търново' }, "logo" : "https://lamerat.github.io/ChervenaZvezda/images/Logo.svg", "type" : "dsd", "shared" : true , "canEdit": true }
-]
+import { createTeam, deleteTeam, listTeams, singleTeam, editTeam } from '../../api/team'
 
 
 const Shared = () => {
@@ -37,6 +30,7 @@ const Shared = () => {
   const firstRenderSharedRef = useRef(true)
   const firstRenderCityRef = useRef(true)
   const firstRenderArenaRef = useRef(true)
+  const firstRenderTeamRef = useRef(true)
 
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
@@ -48,12 +42,16 @@ const Shared = () => {
   const [showAddTeamDialog, setShowAddTeamDialog] = useState(false)
   const [showEditCityDialog, setShowEditCityDialog] = useState({ show: false, data: {} })
   const [showEditArenaDialog, setShowEditArenaDialog] = useState({ show: false, data: {} })
+  const [showEditTeamDialog, setShowEditTeamDialog] = useState({ show: false, data: {} })
   const [arenaQuery, setArenaQuery] = useState({ page: 1, hasNextPage: false })
   const [cityQuery, setCityQuery] = useState({ page: 1, hasNextPage: false })
+  const [teamQuery, setTeamQuery] = useState({ page: 1, hasNextPage: false })
   const [reload, setReload] = useState({ city: false, arena: false, team: false })
 
   const history = useNavigate()
 
+
+  // Load cities
   useEffect(() => {
     if(firstRenderCityRef.current) {
       firstRenderCityRef.current = false
@@ -79,6 +77,7 @@ const Shared = () => {
   }, [history, cityQuery.page, reload.city])
 
 
+  // Load arenas
   useEffect(() => {
     if(firstRenderArenaRef.current) {
       firstRenderArenaRef.current = false
@@ -104,6 +103,32 @@ const Shared = () => {
   }, [history, arenaQuery.page, reload.arena])
 
 
+  // Load teams
+  useEffect(() => {
+    if(firstRenderTeamRef.current) {
+      firstRenderTeamRef.current = false
+      return
+    }
+
+    const authError = () => {
+      cleanCredentials()
+      history('/')
+    }
+
+    listTeams({ pageNumber: teamQuery.page, pageSize: 20 })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setTeams(teams => teamQuery.page === 1 ? result.payload.docs : [ ...teams, ...result.payload.docs])
+        setTeamQuery({ page: result.payload.page, hasNextPage: result.payload.hasNextPage })
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }, [history, teamQuery.page, reload.team])
+
+
   const handlePagination = (scrollTop, height, scrollHeight, column) => {
     if (scrollTop + height < scrollHeight - 20) return
     
@@ -111,8 +136,9 @@ const Shared = () => {
       setCityQuery({ page: cityQuery.page + 1 })
     } else if (column === 'arena' && arenaQuery.hasNextPage) {
       setArenaQuery({ page: arenaQuery.page + 1 })
+    } else if (column === 'team' && teamQuery.hasNextPage) {
+      setTeamQuery({ page: teamQuery.page + 1 })
     }
-    
   }
 
 
@@ -152,8 +178,26 @@ const Shared = () => {
   }
 
 
+  const deleteTeamFunc = (arenaId) => {
+    setConfirmDialog({ show: false, message: '' })
+    deleteTeam(arenaId)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setTeams(teams.filter(x => x._id !== result.payload._id))
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
   const prepareDeleteCity = (cityId, name) => setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете град ${name}`, acceptFunc: () => deleteCityFunc(cityId) })
   const prepareDeleteArena = (arenaId, name) => setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете пързалка ${name}`, acceptFunc: () => deleteArenaFunc(arenaId) })
+  const prepareDeleteTeam = (teamId, name, city) => {
+    setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете отбор ${name} от град ${city}`, acceptFunc: () => deleteTeamFunc(teamId) })
+  }
 
 
   const prepareEditCity = (cityId) => {
@@ -165,6 +209,49 @@ const Shared = () => {
     .then(result => {
       if (!result.success) throw new Error(result.message)
       setShowEditCityDialog({ show: true, data: result.payload })
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const prepareEditArena = (arenaId) => {
+    singleArena(arenaId)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setShowEditArenaDialog({ show: true, data: result.payload })
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const prepareEditTeam = (teamId) => {
+    singleTeam(teamId)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setShowEditTeamDialog({ show: true, data: result.payload })
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const EditCityFunc = (cityId, payload) => {
+    editCity(cityId, payload)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setShowEditCityDialog({ show: false, data: {} })
+      setCities(cities.map(x => x._id === result.payload._id ? result.payload : x))
     })
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -185,30 +272,16 @@ const Shared = () => {
   }
 
 
-  const prepareEditArena = (arenaId) => {
-    singleArena(arenaId)
+  const EditTeamFunc = (teamId, payload) => {
+    editTeam(teamId, payload)
     .then(x => {
       if (x.status === 401) authError()
       return x.json()
     })
     .then(result => {
       if (!result.success) throw new Error(result.message)
-      setShowEditArenaDialog({ show: true, data: result.payload })
-    })
-    .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }
-
-
-  const EditCityFunc = (cityId, payload) => {
-    editCity(cityId, payload)
-    .then(x => {
-      if (x.status === 401) authError()
-      return x.json()
-    })
-    .then(result => {
-      if (!result.success) throw new Error(result.message)
-      setShowEditCityDialog({ show: false, data: {} })
-      setCities(cities.map(x => x._id === result.payload._id ? result.payload : x))
+      setShowEditTeamDialog({ show: false, data: {} })
+      setTeams(teams.map(x => x._id === result.payload._id ? result.payload : x))
     })
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -249,7 +322,19 @@ const Shared = () => {
 
 
   const createNewTeam = (team) => {
-    console.log(team)
+    createTeam(team)
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      setShowAddTeamDialog(false)
+      teamQuery.page === 1
+        ? setReload({ ...reload, team: !reload.team })
+        : setTeamQuery({ page: 1 })
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
 
@@ -258,7 +343,6 @@ const Shared = () => {
       firstRenderSharedRef.current = false
       return
     }
-    setTeams(tempTeams)
     setShared(shared => ({ ...shared, currentPage: 4 }))
   }, [setShared])
 
@@ -345,12 +429,13 @@ const Shared = () => {
             </Stack>
             <Scrollbars
               style={{height: '100vh', padding: 16, marginLeft: -16}}
+              onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight, 'team')}
               // renderThumbVertical={() =><div style={{backgroundColor: mainTheme.palette.primary.light, borderRadius: 'inherit', cursor: 'pointer'}}/>}
             >
               {
                 teams
                   ? teams.length
-                    ? teams.map(x => <TeamRow key={x._id} row={x} /> )
+                    ? teams.map(x => <TeamRow key={x._id} row={x} editFunction={prepareEditTeam}  deleteFunction={prepareDeleteTeam} /> )
                     : null
                   : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
               }
@@ -362,9 +447,10 @@ const Shared = () => {
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       { showAddCityDialog ? <AddCityDialog closeFunc={setShowAddCityDialog} actionFunc={createNewCity} /> : null }
       { showAddArenaDialog ? <AddArenaDialog closeFunc={setShowAddArenaDialog} actionFunc={createNewArena} /> : null }
+      { showAddTeamDialog ? <AddTeamDialog closeFunc={setShowAddTeamDialog} actionFunc={createNewTeam} editMode={false} /> : null }
       { showEditCityDialog.show ? < EditCityDialog data={showEditCityDialog.data} closeFunc={setShowEditCityDialog} actionFunc={EditCityFunc} /> : null }
       { showEditArenaDialog.show ? <EditArenaDialog data={showEditArenaDialog.data} closeFunc={setShowEditArenaDialog} actionFunc={EditArenaFunc} /> : null }
-      { showAddTeamDialog ? <AddTeamDialog closeFunc={setShowAddTeamDialog} actionFunc={createNewTeam} editMode={false} /> : null }
+      { showEditTeamDialog.show ? <AddTeamDialog data={showEditTeamDialog.data} editMode={true} closeFunc={setShowEditTeamDialog} actionFunc={EditTeamFunc} /> : null }
     </Container>
   )
 }
