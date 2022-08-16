@@ -47,7 +47,8 @@ const Shared = () => {
   const [showEditCityDialog, setShowEditCityDialog] = useState({ show: false, data: {} })
   const [showEditArenaDialog, setShowEditArenaDialog] = useState({ show: false, data: {} })
   const [arenaQuery, setArenaQuery] = useState({ page: 1, hasNextPage: false })
-  const [reload, setReload] = useState(true)
+  const [cityQuery, setCityQuery] = useState({ page: 1, hasNextPage: false })
+  const [reload, setReload] = useState({ city: false, arena: false, team: false })
 
   const history = useNavigate()
 
@@ -62,17 +63,18 @@ const Shared = () => {
       history('/')
     }
 
-    listCities()
+    listCities({ pageNumber: cityQuery.page, pageSize: 20 })
       .then(x => {
         if (x.status === 401) authError()
         return x.json()
       })
       .then(result => {
         if (!result.success) throw new Error(result.message)
-        setCities(result.payload.docs)
+        setCities(cities => cityQuery.page === 1 ? result.payload.docs : [ ...cities, ...result.payload.docs])
+        setCityQuery({ page: result.payload.page, hasNextPage: result.payload.hasNextPage })
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }, [history])
+  }, [history, cityQuery.page, reload.city])
 
 
   useEffect(() => {
@@ -97,13 +99,18 @@ const Shared = () => {
         setArenaQuery({ page: result.payload.page, hasNextPage: result.payload.hasNextPage })
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }, [history, arenaQuery.page, reload])
+  }, [history, arenaQuery.page, reload.arena])
 
 
-  const handlePagination = (scrollTop, height, scrollHeight) => {
-    if (scrollTop + height >= scrollHeight - 20) {
-      if (arenaQuery.hasNextPage) setArenaQuery({ page: arenaQuery.page + 1 })
+  const handlePagination = (scrollTop, height, scrollHeight, column) => {
+    if (scrollTop + height < scrollHeight - 20) return
+    
+    if (column === 'city' && cityQuery.hasNextPage) {
+      setCityQuery({ page: cityQuery.page + 1 })
+    } else if (column === 'arena' && arenaQuery.hasNextPage) {
+      setArenaQuery({ page: arenaQuery.page + 1 })
     }
+    
   }
 
 
@@ -214,7 +221,9 @@ const Shared = () => {
     .then(result => {
       if (!result.success) throw new Error(result.message)
       setShowAddCityDialog(false)
-      setCities([result.payload, ...cities])
+      cityQuery.page === 1
+        ? setReload({ ...reload, city: !reload.city })
+        : setCityQuery({ page: 1 })
     })
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -229,8 +238,9 @@ const Shared = () => {
     .then(result => {
       if (!result.success) throw new Error(result.message)
       setShowAddArenaDialog(false)
-      setArenas([result.payload, ...arenas])
-      setReload(!reload)
+      arenaQuery.page === 1
+        ? setReload({ ...reload, arena: !reload.arena })
+        : setArenaQuery({ page: 1 })
     })
     .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -268,7 +278,7 @@ const Shared = () => {
             </Stack>
             <Scrollbars
               style={{height: '100vh', padding: 16, marginLeft: -16}}
-              onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
+              onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight, 'city')}
             >
               {
                 cities
@@ -298,7 +308,7 @@ const Shared = () => {
             </Stack>
             <Scrollbars
               style={{height: '100vh', padding: 16, marginLeft: -16}}
-              onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
+              onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight, 'arena')}
             >
               {
                 arenas
