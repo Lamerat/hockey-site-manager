@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import SharedContext from '../../context/SharedContext'
 import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack, Menu, MenuItem, ListItemIcon } from '@mui/material'
 import mainTheme from '../../theme/MainTheme'
@@ -17,6 +18,8 @@ const News = () => {
   const firstRenderRef = useRef(true)
 
   const [anchorEl, setAnchorEl] = useState(null)
+
+  const history = useNavigate()
 
   const open = Boolean(anchorEl)
 
@@ -45,8 +48,8 @@ const News = () => {
         <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
           <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Новини</Typography>
           <Box display='flex' alignItems='center' mr={-1}>
-            <Tooltip title='Добави нов' arrow>
-              <IconButton onClick={(e) => 1}>
+            <Tooltip title='Добави нова' arrow>
+              <IconButton onClick={() => history('/news/create')}>
                 <LibraryAddIcon color='secondary' />
               </IconButton>
             </Tooltip>

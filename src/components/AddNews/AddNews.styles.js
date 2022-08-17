@@ -1,0 +1,30 @@
+export const editorConfig = {
+  toolbar: [
+      { name: 'corrections', items: ['Undo', 'Redo'] },
+      { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+      { name: 'styles', items: ['Format'] },
+      { name: 'paragraph', items: ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'NumberedList', 'BulletedList'] },
+      { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText'] },
+      { name: 'tools', items: ['Link', 'Maximize'] },
+  ],
+  enterMode: 'ENTER_BR',
+  plugins: [
+      'basicstyles',
+      'clipboard',
+      'emoji',
+      'enterkey',
+      'entities',
+      'floatingspace',
+      'indentlist',
+      'justify',
+      'link',
+      'list',
+      'toolbar',
+      'undo',
+      'wysiwygarea',
+      "maximize",
+      'format',
+      'resize',
+      "autogrow"
+  ],
+}
