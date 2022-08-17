@@ -1,80 +1,136 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { Container, Paper, Box, Typography, IconButton, Tooltip, Chip , Stack , Button, TextField } from '@mui/material'
-import { CKEditor } from 'ckeditor4-react';
-import SharedContext from '../../context/SharedContext'
-import mainTheme from '../../theme/MainTheme'
-import { Scrollbars } from 'react-custom-scrollbars-2'
-import CloseIcon from '@mui/icons-material/Close';
+import { CKEditor } from 'ckeditor4-react'
 import { editorConfig } from './AddNews.styles'
-import SaveIcon from '@mui/icons-material/Save';
-
+import { Scrollbars } from 'react-custom-scrollbars-2'
+import mainTheme from '../../theme/MainTheme'
+import CloseIcon from '@mui/icons-material/Close'
+import ErrorDialog from '../ErrorDialog/ErrorDialog'
+import { uploadFiles } from '../../api/files'
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 const AddNews = () => {
-  const { setShared } = useContext(SharedContext)
-  const firstRenderRef = useRef(true)
-
-  const [title, SetTitle] = useState('')
+  const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
+  const [title, SetTitle] = useState({ value: '', error: false })
+  const [mainPhoto, setMainPhoto] = useState(null)
+  const [photos, setPhotos] = useState([])
   const [htmlCode, setHtmlCode] = useState('')
+  const [checkForm, setCheckForm] = useState(false)
+  
 
-  
-  
-  useEffect(() => {
-    if(firstRenderRef.current) {
-      firstRenderRef.current = false
+  const fileUploadAction = (file, field) => {
+    if (!file || !file.length) return
+
+    const formData = new FormData()
+    if (file.length > 1) {
+      for (let i = 0; i < file.length; i++) formData.append('images', file[i])
+    } else {
+      formData.append('images', file[0])
+    }
+
+    uploadFiles(formData)
+      .then(x => x.json())
+      .then(result => field === 'main' ? setMainPhoto(result.payload[0]) : setPhotos([...result.payload, ...photos]))
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+  const removePhoto = (id) => {
+    setPhotos(photos.filter(x => x.name !== id))
+  }
+
+
+  const createNews = () => {
+    setCheckForm(true)
+
+    const messages = []
+    if (!title.value.trim()) {
+      messages.push('заглавието')
+      SetTitle({ ...title, error: true })
+    }
+
+    if (!mainPhoto) messages.push('заглавната снимка')
+
+    if (messages.length) {
+      setErrorDialog({ show: true, message: `Не са попълнени полетата: ${messages.join(', ')}` })
       return
     }
-    setShared(shared => ({ ...shared, currentPage: 0 }))
-  }, [setShared])
 
-  
+    const newsObject = {
+      title, mainPhoto, photos, htmlCode
+    }
+    console.log(newsObject)
+  }
+
+
   return (
     <Container sx={{maxWidth: '1366px !important', marginTop: 3, pl: 3, pr: 3}} disableGutters={true}>
+
+      
       <Paper elevation={2} sx={{p: 2, maxHeight: 'calc(100vh - 140px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
         <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
           <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Добавяне на новина</Typography>
           <Box display='flex' alignItems='center' mr={-1}>
-            <Tooltip title='Добави нов' arrow>
-              <IconButton onClick={(e) => 1}>
-                <CloseIcon color='secondary' />
-              </IconButton>
+            <Tooltip title='Затвори' arrow placement='left'>
+              <IconButton onClick={(e) => 1}><CloseIcon color='secondary' /></IconButton>
             </Tooltip>
-            
           </Box>
         </Box>
-        <Scrollbars
-          style={{height: '100vh', padding: 16, marginLeft: -16}}
-          // onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight, 'team')}
-          // renderThumbVertical={() =><div style={{backgroundColor: mainTheme.palette.primary.light, borderRadius: 'inherit', cursor: 'pointer'}}/>}
-        >
+        <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16}}>
           <Box p={2} pt={1}>
-            <Box display='flex' alignItems='center' justifyContent='space-between' minWidth='100%'>
+            <Box display='flex' alignItems='center' justifyContent='space-between' minWidth='100%' mb={3}>
               <TextField
                 label='Заглавие'
+                error={title.error}
                 size='small'
                 required
                 fullWidth
                 variant='outlined'
-                value={title}
-                onChange={(e) => SetTitle(e.target.value)}
+                value={title.value}
+                onChange={(e) => SetTitle({ value: e.target.value, error: false })}
               />
-              <Box display='flex' justifyContent='right'>
-                <Button variant='contained' size='small' component='label'>Заглавна снимка<input hidden accept='image/*' multiple type='file' /></Button>
-                <Button variant='contained' size='small' component='label'>Снимки<input hidden accept='image/*' multiple type='file' /></Button>  
-              </Box>
+              <Button variant='contained' sx={{ml: 3, width: 220}} component='label' fullWidth onClick={createNews}>Добави новината</Button>
             </Box>
-          
-            
-          
-            <Stack direction='row' spacing={1} sx={{mt: 3}}>
-              
-              
-              <Chip icon={<SaveIcon onClick={() => console.log('ok')} />} label='elka' variant='filled' onDelete={() => 1} />
+            <Stack direction='row' alignItems='center' minHeight={35} spacing={2} mb={3}>
+              <Button
+                startIcon={<PhotoCameraIcon />}
+                disabled={ mainPhoto !== null }
+                color={ checkForm && !mainPhoto ? 'error' : 'secondary'}
+                component='label'
+                variant='outlined'
+                sx={{ width: 200, justifyContent: 'flex-start' }}
+                onChange={(e) => fileUploadAction(e.target.files, 'main')}
+              >
+                Заглавна снимка<input hidden accept='image/*' type='file' />
+              </Button>
+              {
+                mainPhoto
+                  ? <Chip label={mainPhoto.filename} variant='outlined' color='secondary' onDelete={() => setMainPhoto(null)} />
+                  : null
+              }
             </Stack>
-            
+            <Stack direction='row' alignItems='center' minHeight={35} spacing={2}>
+            <Button
+              startIcon={<PhotoLibraryIcon />}
+              color='secondary'
+              component='label'
+              variant='outlined'
+              sx={{ width: 200, justifyContent: 'flex-start' }}
+              onChange={(e) => fileUploadAction(e.target.files, 'other')}
+            >
+              Снимки<input hidden accept='image/*' multiple type='file' />
+            </Button>
+            {
+                photos.length
+                  ? photos.map(x => <Chip key={x.name} variant='outlined' label={x.filename} color='secondary' onDelete={() => removePhoto(x.name)} />)
+                  : null
+              }
+            </Stack>
             <CKEditor style={{marginTop: '24px'}} config={editorConfig} onChange={(e) => setHtmlCode(e.editor.getData())} />
           </Box>
         </Scrollbars>
       </Paper>
+      { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
     </Container>
   )
 }
