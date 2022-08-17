@@ -1,11 +1,12 @@
 export const editorConfig = {
   toolbar: [
       { name: 'corrections', items: ['Undo', 'Redo'] },
-      { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+      { name: 'basicStyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
       { name: 'styles', items: ['Format'] },
       { name: 'paragraph', items: ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'NumberedList', 'BulletedList'] },
       { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText'] },
-      { name: 'tools', items: ['Link', 'Maximize'] },
+      { name: 'tools', items: ['Link', 'Table', 'Image'] },
+      { name: 'other', items: ['Maximize'] }
   ],
   enterMode: 'ENTER_BR',
   plugins: [
@@ -22,9 +23,11 @@ export const editorConfig = {
       'toolbar',
       'undo',
       'wysiwygarea',
-      "maximize",
+      'maximize',
       'format',
       'resize',
-      "autogrow"
+      'autogrow',
+      'table',
+      'image',
   ],
 }
