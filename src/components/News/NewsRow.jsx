@@ -6,6 +6,7 @@ import PushPinIcon from '@mui/icons-material/PushPin'
 import { menuPaperStyle } from './News.styles'
 import { formatDate } from '../../common/help-functions'
 import mainTheme from '../../theme/MainTheme'
+import RemoveIcon from '@mui/icons-material/Remove'
 
 
 const NewsRow = ({row}) => {
@@ -37,9 +38,12 @@ const NewsRow = ({row}) => {
       >
         <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}}>
         <ListItemIcon>
-          <PushPinIcon fontSize='small' color='primary' />
+          <Box position='relative' width='20px' height='20px'>
+            { row.pinned ? <RemoveIcon color='error' sx={{position: 'absolute', bottom: -4, left: -3, transform: 'rotate(45deg)', zIndex: 10, fontSize: '30px' }} /> : null }
+            <PushPinIcon fontSize='small' color='primary' sx={{transform: 'rotate(45deg)'}} />
+          </Box>
         </ListItemIcon>
-          Закачи
+          { row.pinned ? 'Откачи' : 'Закачи' }
         </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
           <ListItemIcon>

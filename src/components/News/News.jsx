@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack, Menu, FormGroup, FormControl, InputLabel, Select, OutlinedInput, MenuItem, Checkbox, ListItemText } from '@mui/material'
+import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import SharedContext from '../../context/SharedContext'
 import UserContext from '../../context/UserContext'
@@ -13,11 +13,9 @@ import SearchIcon from '@mui/icons-material/Search'
 import DateRangeIcon from '@mui/icons-material/DateRange'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { menuPaperStyle, searchMenuProps } from './News.styles'
-import StyledTextField from '../StyledElements/StyledTextField'
-import StyledButton from '../StyledElements/StyledButton'
-import { newsSearchFieldsTranslation, newsSearchFields } from '../../config/constants'
 import { getCredentials, cleanCredentials } from '../../config/storage'
+import SearchMenu from './SearchMenu'
+
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false,  hasNextPage: false, sort: { createdAt: -1 } }
 
@@ -29,8 +27,7 @@ const News = () => {
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
   const searchMenuRef = useRef(null)
-
-  const [searchFilter, setSearchFilter] = useState(newsSearchFields)
+  
   const [query, setQuery] = useState(queryDefault)
   const [news, setNews] = useState([])
   const [openSearchMenu, setOpenSearchMenu] = useState(false)
@@ -60,7 +57,7 @@ const News = () => {
       })
       .catch(error => console.log(error))
   }, [query.pageNumber, query.sort, history])
-  
+
 
   const handlePagination = (scrollTop, height, scrollHeight) => {
     if (scrollTop + height < scrollHeight - 20) return
@@ -82,6 +79,7 @@ const News = () => {
     setQuery(newQuery)
   }
 
+
   const sortArrow = (field) => {
     if (!(field in query.sort)) return null
     return query.sort[field] === 1 ? <KeyboardArrowUpIcon color='primary' sx={rotateAngle(true)}/> : <KeyboardArrowDownIcon color='primary' sx={rotateAngle(false)}/>
@@ -95,10 +93,8 @@ const News = () => {
     setShared(shared => ({ ...shared, currentPage: 0 }))
   }, [setShared])
 
-  const updateSearchFilter = (value) => setSearchFilter(typeof value === 'string' ? value.split(',') : value)
-
-  const startSearch = () => {
-    console.log(searchFilter)
+  const startSearch = (keyword, fields) => {
+    console.log(keyword, fields)
   }
 
   if (!user || !getCredentials()) return null
@@ -143,49 +139,7 @@ const News = () => {
           </Box>
         </Scrollbars>
       </Paper>
-      <Menu
-        anchorEl={searchMenuRef.current}
-        keepMounted={true}
-        open={openSearchMenu}
-        onClose={() => setOpenSearchMenu(false)}
-        PaperProps={menuPaperStyle}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <Box p={2} maxWidth='300px' minWidth='300px'>
-          <FormGroup row>
-            <StyledTextField
-              label='Ключова дума'
-              size='small'
-              variant='outlined'
-              sx={{ width: 'calc(100% - 40px)'}}
-              // value={settings.currentMeterValue}
-              name='currentMeterValue'
-              // onChange={(e) => updateData(e.target.name, e.target.value)}
-              onFocus={event => {event.target.select()}}
-            />
-            <StyledButton variant='contained' startIcon={<SearchIcon />} onClick={startSearch}/>
-          </FormGroup>
-          <FormControl fullWidth sx={{ mt: 3 }}>
-            <InputLabel size='small'>Търсене в</InputLabel>
-            <Select
-              size='small'
-              multiple
-              value={searchFilter}
-              onChange={(e) => updateSearchFilter(e.target.value)}
-              input={<OutlinedInput label='Търсене в' size='small' />}
-              renderValue={(selected) => selected.map(x => newsSearchFieldsTranslation[x]).join(' ● ')}
-              MenuProps={searchMenuProps}
-            >
-              {
-                newsSearchFields.map((name) => (
-                  <MenuItem key={name} value={name}><Checkbox checked={searchFilter.indexOf(name) > -1} /><ListItemText primary={newsSearchFieldsTranslation[name]}/></MenuItem>
-                ))
-              }
-            </Select>
-          </FormControl>
-        </Box>
-      </Menu>
+      { openSearchMenu ? <SearchMenu searchMenuRef={searchMenuRef} setOpenSearchMenu={setOpenSearchMenu} startSearch={startSearch} /> : null }
     </Container>
   )
 }
