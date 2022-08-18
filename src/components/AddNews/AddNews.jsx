@@ -105,7 +105,7 @@ const AddNews = () => {
               </Button>
               {
                 mainPhoto
-                  ? <Chip label={mainPhoto.filename} variant='outlined' color='secondary' onDelete={() => setMainPhoto(null)} />
+                  ? <Chip label={mainPhoto.originalName} variant='outlined' color='secondary' onDelete={() => setMainPhoto(null)} />
                   : null
               }
             </Stack>
@@ -122,7 +122,7 @@ const AddNews = () => {
             </Button>
             {
                 photos.length
-                  ? photos.map(x => <Chip key={x.name} variant='outlined' label={x.filename} color='secondary' onDelete={() => removePhoto(x.name)} />)
+                  ? photos.map(x => <Chip key={x.name} variant='outlined' label={x.originalName} color='secondary' onDelete={() => removePhoto(x.name)} />)
                   : null
               }
             </Stack>
