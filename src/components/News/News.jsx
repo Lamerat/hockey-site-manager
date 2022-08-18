@@ -1,41 +1,62 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
+import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import SharedContext from '../../context/SharedContext'
-import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack, Menu, MenuItem, ListItemIcon } from '@mui/material'
+import { Scrollbars } from 'react-custom-scrollbars-2'
+import NewsRow from './NewsRow'
+import { sortBox, sortLabel, rotateAngle } from '../../common/sortStyles'
+import { listNewsRequest } from '../../api/news'
 import mainTheme from '../../theme/MainTheme'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
-import { menuPaperStyle } from './News.styles'
-import { sortBox, sortLabel, rotateAngle } from '../../common/sortStyles'
+import SearchIcon from '@mui/icons-material/Search'
+import DateRangeIcon from '@mui/icons-material/DateRange'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-// import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import DeleteIcon from '@mui/icons-material/Delete'
-import PushPinIcon from '@mui/icons-material/PushPin'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
+const queryDefault = { page: 1, limit: 15, noPagination: false, sort: { createdAt: -1 } }
 
 const News = () => {
   const { setShared } = useContext(SharedContext)
+  const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
 
-  const [anchorEl, setAnchorEl] = useState(null)
+  const [query, setQuery] = useState(queryDefault)
+  const [news, setNews] = useState([])
 
   const history = useNavigate()
 
-  const open = Boolean(anchorEl)
-
-  const renderSort = (field) => {
-
-  }
-
-  const sortArrow = (field) => {
-    // if (!(field in query.sort)) return null
-    // return query.sort[field] === 1 ? <KeyboardArrowUpIcon color='primary' sx={rotateAngle(true)}/> : <KeyboardArrowDownIcon color='primary' sx={rotateAngle(false)}/>
-    return <KeyboardArrowUpIcon color='primary' sx={rotateAngle(true)}/>
-  }
-  
   useEffect(() => {
     if(firstRenderRef.current) {
       firstRenderRef.current = false
+      return
+    }
+    listNewsRequest({ pageSize: 20 })
+      .then(x => x.json())
+      .then(result => setNews(result.payload.docs))
+      .catch(error => console.log(error))
+  }, [])
+
+
+  const renderSort = (field) => {
+    let newQuery
+    if (!(field in query.sort)) {
+      newQuery = { ...queryDefault, sort: { [field]: -1 } }
+    } else {
+      newQuery = query.sort[field] === 1
+      ? { ...queryDefault, sort: { [field]: -1 } }
+      : { ...queryDefault, sort: { [field]: 1 } }
+    }
+    setQuery(newQuery)
+  }
+
+  const sortArrow = (field) => {
+    if (!(field in query.sort)) return null
+    return query.sort[field] === 1 ? <KeyboardArrowUpIcon color='primary' sx={rotateAngle(true)}/> : <KeyboardArrowDownIcon color='primary' sx={rotateAngle(false)}/>
+  }
+  
+  useEffect(() => {
+    if(firstRenderSharedRef.current) {
+      firstRenderSharedRef.current = false
       return
     }
     setShared(shared => ({ ...shared, currentPage: 0 }))
@@ -44,10 +65,20 @@ const News = () => {
   
   return (
     <Container sx={{maxWidth: '1366px !important', marginTop: 3, pl: 3, pr: 3}} disableGutters={true}>
-      <Paper elevation={2} sx={{p: 2}}>
+      <Paper elevation={2} sx={{p: 2, pb: 0, maxHeight: 'calc(100vh - 130px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
         <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
           <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Новини</Typography>
           <Box display='flex' alignItems='center' mr={-1}>
+            <Tooltip title='Търсене' arrow>
+              <IconButton onClick={() => 1}>
+                <SearchIcon color='secondary' />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title='Филтрирай по период' arrow>
+              <IconButton onClick={() => 1}>
+                <DateRangeIcon color='secondary' />
+              </IconButton>
+            </Tooltip>
             <Tooltip title='Добави нова' arrow>
               <IconButton onClick={() => history('/news/create')}>
                 <LibraryAddIcon color='secondary' />
@@ -56,58 +87,19 @@ const News = () => {
           </Box>
         </Box>
         <Stack direction='row' pt={1} pb={1} pl={1.5} pr={1.5} minHeight={26}>
-          <Box width='55%' sx={sortBox} onClick={()=> renderSort('name')}><Box sx={sortLabel}>Заглавие</Box>{sortArrow('name')}</Box>
-          <Box width='10%' sx={sortBox} onClick={()=> renderSort('name')}><Box sx={sortLabel}>Снимки</Box>{sortArrow('name')}</Box>
-          <Box width='15%' sx={sortBox} onClick={()=> renderSort('name')}><Box sx={sortLabel}>Дата</Box>{sortArrow('name')}</Box>
-          <Box width='15%' sx={sortBox} onClick={()=> renderSort('name')}><Box sx={sortLabel}>Добавена от</Box>{sortArrow('name')}</Box>
+          <Box width='55%' sx={sortBox} onClick={()=> renderSort('title')}><Box sx={sortLabel}>Заглавие</Box>{sortArrow('title')}</Box>
+          <Box width='10%' sx={sortBox} onClick={()=> renderSort('photosCount')}><Box sx={sortLabel}>Снимки</Box>{sortArrow('photosCount')}</Box>
+          <Box width='15%' sx={sortBox} onClick={()=> renderSort('createdAt')}><Box sx={sortLabel}>Дата</Box>{sortArrow('createdAt')}</Box>
+          <Box width='15%' sx={sortBox} onClick={()=> renderSort('user.name')}><Box sx={sortLabel}>Добавена от</Box>{sortArrow('user.name')}</Box>
           <Box width='5%'/>
         </Stack>
-        <Paper elevation={1} sx={{p: 1.5, mt: 1}}>
-          <Stack direction='row' alignItems='center' minHeight={28}>
-            <Box width='55%' fontFamily='CorsaGrotesk' fontSize='14px'>Някакво заглавие</Box>
-            <Box width='10%' fontFamily='CorsaGrotesk' fontSize='14px'>3</Box>
-            <Box width='15%' fontFamily='CorsaGrotesk' fontSize='14px'>02-10-2022</Box>
-            <Box width='15%' fontFamily='CorsaGrotesk' fontSize='14px'>Симеон Младенов</Box>
-            <Box width='5%' display='flex' alignItems='center' justifyContent='right'>
-              <IconButton size='small' onClick={(e) => setAnchorEl(e.currentTarget)}><MoreVertIcon fontSize='18px' color='secondary' /></IconButton>
-            </Box>
-          </Stack>
-        </Paper>
-        <Paper elevation={1} sx={{p: 1.5, mt: 1}}>
-          <Stack direction='row' alignItems='center' minHeight={28}>
-            <Box width='55%' fontFamily='CorsaGrotesk' fontSize='14px'>Някакво заглавие</Box>
-            <Box width='10%' fontFamily='CorsaGrotesk' fontSize='14px'>3</Box>
-            <Box width='15%' fontFamily='CorsaGrotesk' fontSize='14px'>02-10-2022</Box>
-            <Box width='15%' fontFamily='CorsaGrotesk' fontSize='14px'>Симеон Младенов</Box>
-            <Box width='5%' display='flex' alignItems='center' justifyContent='right'>
-              <IconButton size='small' onClick={(e) => setAnchorEl(e.currentTarget)}><MoreVertIcon fontSize='18px' color='secondary' /></IconButton>
-            </Box>
-          </Stack>
-        </Paper>
+        { news.filter(record => record.pinned).map(x => <NewsRow key={x._id} row={x} />) }
+        <Scrollbars style={{height: '100vh', padding: 16, paddingTop: 0, marginLeft: -16}} >
+          <Box p={2} pt={0}>
+            { news.filter(record => !record.pinned).map(x => <NewsRow key={x._id} row={x} />) }
+          </Box>
+        </Scrollbars>
       </Paper>
-      <Menu
-        anchorEl={anchorEl}
-        keepMounted={true}
-        open={open}
-        onClose={() => setAnchorEl(null)}
-        onClick={() => setAnchorEl(null)}
-        PaperProps={menuPaperStyle}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}}>
-        <ListItemIcon>
-          <PushPinIcon fontSize='small' color='primary' />
-        </ListItemIcon>
-          Закачи
-        </MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
-          <ListItemIcon>
-            <DeleteIcon fontSize='small' color='primary'/>
-          </ListItemIcon>
-            Изтрий
-        </MenuItem>
-      </Menu>
     </Container>
   )
 }
