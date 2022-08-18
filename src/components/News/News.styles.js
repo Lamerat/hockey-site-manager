@@ -25,3 +25,12 @@ export const menuPaperStyle = {
     },
   },
 }
+
+export const searchMenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: 48 * 4.5 + 8,
+      width: 250,
+    },
+  },
+};
