@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Container, Paper, Box, Typography, IconButton, Tooltip, Chip , Stack , Button, TextField } from '@mui/material'
+import { Container, Paper, Box, Typography, IconButton, Tooltip, Chip , Stack , Button, TextField, FormControlLabel } from '@mui/material'
 import { CKEditor } from 'ckeditor4-react'
 import { editorConfig } from './AddNews.styles'
 import { Scrollbars } from 'react-custom-scrollbars-2'
@@ -9,6 +9,8 @@ import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { uploadFiles } from '../../api/files'
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import IOSSwitch from '../IOSwitch/IOSwitch'
+import { createNewsRequest } from '../../api/news'
 
 const AddNews = () => {
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
@@ -17,6 +19,7 @@ const AddNews = () => {
   const [photos, setPhotos] = useState([])
   const [htmlCode, setHtmlCode] = useState('')
   const [checkForm, setCheckForm] = useState(false)
+  const [pinned, setPinned] = useState(false)
   
 
   const fileUploadAction = (file, field) => {
@@ -57,9 +60,17 @@ const AddNews = () => {
     }
 
     const newsObject = {
-      title, mainPhoto, photos, htmlCode
+      title: title.value,
+      text: htmlCode,
+      coverPhoto: { name: mainPhoto.originalName, address: mainPhoto.url },
+      photos: photos.map(x => ({ name: x.originalName, address: x.url })),
+      pinned
     }
-    console.log(newsObject)
+    
+    createNewsRequest(newsObject)
+      .then(x => x.json())
+      .then(result => console.log(result))
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
 
@@ -91,24 +102,27 @@ const AddNews = () => {
               />
               <Button variant='contained' sx={{ml: 3, width: 220}} component='label' fullWidth onClick={createNews}>Добави новината</Button>
             </Box>
-            <Stack direction='row' alignItems='center' minHeight={35} spacing={2} mb={3}>
-              <Button
-                startIcon={<PhotoCameraIcon />}
-                disabled={ mainPhoto !== null }
-                color={ checkForm && !mainPhoto ? 'error' : 'secondary'}
-                component='label'
-                variant='outlined'
-                sx={{ width: 200, justifyContent: 'flex-start' }}
-                onChange={(e) => fileUploadAction(e.target.files, 'main')}
-              >
-                Заглавна снимка<input hidden accept='image/*' type='file' />
-              </Button>
-              {
-                mainPhoto
-                  ? <Chip label={mainPhoto.originalName} variant='outlined' color='secondary' onDelete={() => setMainPhoto(null)} />
-                  : null
-              }
-            </Stack>
+            <Box display='flex' alignItems='center' justifyContent='space-between' minHeight={35} mb={3}>
+              <Box>
+                <Button
+                    startIcon={<PhotoCameraIcon />}
+                    disabled={ mainPhoto !== null }
+                    color={ checkForm && !mainPhoto ? 'error' : 'secondary'}
+                    component='label'
+                    variant='outlined'
+                    sx={{ width: 200, justifyContent: 'flex-start', mr: 2 }}
+                    onChange={(e) => fileUploadAction(e.target.files, 'main')}
+                  >
+                    Заглавна снимка<input hidden accept='image/*' type='file' />
+                  </Button>
+                  {
+                    mainPhoto
+                      ? <Chip label={mainPhoto.originalName} variant='outlined' color='secondary' onDelete={() => setMainPhoto(null)} />
+                      : null
+                  }
+                </Box>
+                <FormControlLabel control={<IOSSwitch sx={{ mr: 2 }} checked={pinned} onChange={() => setPinned(!pinned)} />} label='Закачена' sx={{mr: 1}}/>
+            </Box>
             <Stack direction='row' alignItems='center' minHeight={35} spacing={2}>
             <Button
               startIcon={<PhotoLibraryIcon />}
