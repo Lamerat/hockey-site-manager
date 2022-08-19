@@ -15,6 +15,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { getCredentials, cleanCredentials } from '../../config/storage'
 import SearchMenu from './SearchMenu'
+import DataFilterMenu from './DataFilterMenu'
 
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false,  hasNextPage: false, sort: { createdAt: -1 } }
@@ -27,10 +28,12 @@ const News = () => {
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
   const searchMenuRef = useRef(null)
+  const dateMenuRef = useRef(null)
   
   const [query, setQuery] = useState(queryDefault)
   const [news, setNews] = useState([])
   const [openSearchMenu, setOpenSearchMenu] = useState(false)
+  const [openDateMenu, setOpenDateMenu] = useState(false)
 
   const history = useNavigate()
 
@@ -111,7 +114,7 @@ const News = () => {
               </IconButton>
             </Tooltip>
             <Tooltip title='Филтрирай по период' arrow>
-              <IconButton onClick={() => 1}>
+              <IconButton onClick={() => setOpenDateMenu(!openDateMenu)} ref={dateMenuRef}>
                 <DateRangeIcon color='secondary' />
               </IconButton>
             </Tooltip>
@@ -140,6 +143,7 @@ const News = () => {
         </Scrollbars>
       </Paper>
       { openSearchMenu ? <SearchMenu searchMenuRef={searchMenuRef} setOpenSearchMenu={setOpenSearchMenu} startSearch={startSearch} /> : null }
+      { openDateMenu ? <DataFilterMenu refMenu={dateMenuRef} openMenu={setOpenDateMenu} actionFunc={startSearch} /> : null }
     </Container>
   )
 }

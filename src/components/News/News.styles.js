@@ -16,7 +16,7 @@ export const menuPaperStyle = {
       display: 'block',
       position: 'absolute',
       top: 0,
-      right: 9,
+      right: 14,
       width: 10,
       height: 10,
       bgcolor: 'background.paper',
