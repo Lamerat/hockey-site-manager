@@ -42,3 +42,8 @@ export const badgeProps = {
     backgroundColor: '#ffc107'
   }
 }
+
+export const photoStyle = {
+  borderRadius: 1,
+  boxShadow: 'rgba(0, 0, 0, 0.15) 2.4px 2.4px 3.2px'
+}

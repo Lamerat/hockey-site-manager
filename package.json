@@ -17,6 +17,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@types/validator": "^13.7.5",
     "ckeditor4-react": "^4.0.0",
+    "html-react-parser": "^3.0.3",
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-custom-scrollbars-2": "^4.5.0",

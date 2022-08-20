@@ -18,6 +18,7 @@ import { badgeProps } from './News.styles'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import LinearProgress from '@mui/material/LinearProgress'
+import PreviewDialog from './PreviewDialog'
 
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false,  hasNextPage: false, sort: { createdAt: -1 }, search: '', searchFields: [], startDate: null, endDate: null }
@@ -36,6 +37,7 @@ const News = () => {
   const [openFilterMenu, setOpenFilterMenu] = useState(false)
   const [filterBadge, setFilterBadge] = useState(true)
   const [reloadList, setReloadList] = useState(false)
+  const [showPreviewDialog, setShowPreviewDialog] = useState({ show: false, data: null })
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
 
@@ -149,7 +151,11 @@ const News = () => {
     if (!(field in query.sort)) return null
     return query.sort[field] === 1 ? <KeyboardArrowUpIcon color='primary' sx={rotateAngle(true)}/> : <KeyboardArrowDownIcon color='primary' sx={rotateAngle(false)}/>
   }
-  
+
+
+
+  const previewNews = (newsId) => setShowPreviewDialog({ show: true, data: newsId })
+
 
   useEffect(() => {
     if(firstRenderSharedRef.current) {
@@ -193,7 +199,7 @@ const News = () => {
           news
             ? news.length
               ? <>
-                { news.filter(record => record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} deleteFunction={prepareDeleteNews}/>) }
+                { news.filter(record => record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} previewFunc={previewNews} deleteFunction={prepareDeleteNews}/>) }
                 <Scrollbars
                   style={{height: '100vh', padding: 16, paddingTop: 0, marginLeft: -16}}
                   onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
@@ -201,7 +207,7 @@ const News = () => {
                   <Box p={2} pt={0}>
                     {
                       news.filter(record => !record.pinned).length
-                        ? news.filter(record => !record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} deleteFunction={prepareDeleteNews}/>)
+                        ? news.filter(record => !record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} previewFunc={previewNews} deleteFunction={prepareDeleteNews}/>)
                         : <Box m={2} textAlign='center'>Няма намерени записи</Box>
                     }
                   </Box>
@@ -214,6 +220,8 @@ const News = () => {
       <FilterMenu searchMenuRef={filterMenuRef} openMenu={openFilterMenu} setOpenMenu={setOpenFilterMenu} addFilterFunc={addFilter} />
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
+      { showPreviewDialog.show ? <PreviewDialog newsId={showPreviewDialog.data} closeFunc={setShowPreviewDialog}/> : null }
+      
     </Container>
   )
 }
