@@ -13,6 +13,7 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import IOSSwitch from '../IOSwitch/IOSwitch'
 import { createNewsRequest } from '../../api/news'
+import ImagePreview from '../StyledElements/ImagePreview'
 
 const AddNews = () => {
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
@@ -23,6 +24,8 @@ const AddNews = () => {
   const [htmlCode, setHtmlCode] = useState('')
   const [checkForm, setCheckForm] = useState(false)
   const [pinned, setPinned] = useState(false)
+  const [imagePreview, setImagePreview] = useState({ show: false, image: '' })
+  const [anchorPreview, setAnchorPreview] = useState(null)
 
   const history = useNavigate()
   
@@ -81,12 +84,25 @@ const AddNews = () => {
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
+
   const cancelCreate = () => {
     if (title.value.trim() !== '' || htmlCode !== '' || mainPhoto || photos.length ) {
       setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да прекратите процеса? Всички данни ще бъдат загубени!`, acceptFunc: () => history('/news') })
     } else {
       history('/news')
     }
+  }
+
+
+  const showPreviewImage = (event, image) => {
+    setAnchorPreview(event.currentTarget)
+    setImagePreview({ show: true, image })
+  }
+
+
+  const hidePreviewImage = () => {
+    setAnchorPreview(null)
+    setImagePreview({ show: false, image: '' })
   }
 
 
@@ -133,7 +149,14 @@ const AddNews = () => {
                   </Button>
                   {
                     mainPhoto
-                      ? <Chip label={mainPhoto.originalName} variant='outlined' color='secondary' onDelete={() => setMainPhoto(null)} />
+                      ? <Chip
+                          label={mainPhoto.originalName}
+                          variant='outlined'
+                          color='secondary'
+                          onDelete={() => setMainPhoto(null)}
+                          onMouseEnter={(event) => showPreviewImage(event, mainPhoto.url)}
+                          onMouseLeave={hidePreviewImage}
+                        />
                       : null
                   }
                 </Box>
@@ -152,7 +175,18 @@ const AddNews = () => {
             </Button>
             {
                 photos.length
-                  ? photos.map(x => <Chip key={x._id} variant='outlined' label={x.originalName} color='secondary' onDelete={() => removePhoto(x._id)} />)
+                  ? photos
+                    .map(x => (
+                      <Chip
+                        key={x._id}
+                        variant='outlined'
+                        label={x.originalName}
+                        color='secondary'
+                        onDelete={() => removePhoto(x._id)}
+                        onMouseEnter={(event) => showPreviewImage(event, x.url)}
+                        onMouseLeave={hidePreviewImage}
+                      />)
+                    )
                   : null
               }
             </Stack>
@@ -160,6 +194,7 @@ const AddNews = () => {
           </Box>
         </Scrollbars>
       </Paper>
+      <ImagePreview anchor={anchorPreview} data={imagePreview} closeFunc={hidePreviewImage} />
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
     </Container>

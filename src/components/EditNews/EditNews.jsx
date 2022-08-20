@@ -16,6 +16,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import IOSSwitch from '../IOSwitch/IOSwitch'
 import { editNewsRequest, singleNewsRequest } from '../../api/news'
 import { getCredentials, cleanCredentials } from '../../config/storage'
+import ImagePreview from '../StyledElements/ImagePreview'
 
 const initialNewsData = {}
 
@@ -31,11 +32,12 @@ const EditNews = () => {
   const [htmlCode, setHtmlCode] = useState('')
   const [pinned, setPinned] = useState(false)
   const [loadComplete, setLoadComplete] = useState(false)
-
+  const [imagePreview, setImagePreview] = useState({ show: false, image: '' })
+  const [anchorPreview, setAnchorPreview] = useState(null)
 
   const { id: newsId } = useParams()
   const history = useNavigate()
-  
+
 
   const fileUploadAction = (file, field) => {
     if (!file || !file.length) return
@@ -86,15 +88,13 @@ const EditNews = () => {
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
+
   const cancelCreate = () => {
     let haveChanges = false
     if (title.value !== initialNewsData.title) haveChanges = true
     if (mainPhoto?.url !== initialNewsData.mainPhoto) haveChanges = true
     if (pinned !== initialNewsData.pinned) haveChanges = true
     if (htmlCode !== initialNewsData.htmlCode) haveChanges = true
-
-    
-    
     
     photos.map(x => x._id).sort().forEach((el, index) => {
       if (el.toString() !== initialNewsData.photos[index].toString()) haveChanges = true
@@ -142,6 +142,19 @@ const EditNews = () => {
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }, [history, newsId])
 
+
+  const showPreviewImage = (event, image) => {
+    setAnchorPreview(event.currentTarget)
+    setImagePreview({ show: true, image })
+  }
+
+
+  const hidePreviewImage = () => {
+    setAnchorPreview(null)
+    setImagePreview({ show: false, image: '' })
+  }
+
+
   if (!user || !getCredentials()) return null
 
   return (
@@ -188,7 +201,14 @@ const EditNews = () => {
                         </Button>
                         {
                           mainPhoto
-                            ? <Chip label={mainPhoto.originalName} variant='outlined' color='secondary' onDelete={() => setMainPhoto(null)} />
+                            ? <Chip
+                                label={mainPhoto.originalName}
+                                variant='outlined'
+                                color='secondary'
+                                onDelete={() => setMainPhoto(null)}
+                                onMouseEnter={(event) => showPreviewImage(event, mainPhoto.url)}
+                                onMouseLeave={hidePreviewImage}
+                              />
                             : null
                         }
                       </Box>
@@ -206,9 +226,20 @@ const EditNews = () => {
                     Снимки<input hidden accept='image/*' multiple type='file' />
                   </Button>
                   {
-                      photos.length
-                        ? photos.map(x => <Chip key={x._id} variant='outlined' label={x.originalName} color='secondary' onDelete={() => removePhoto(x._id)} />)
-                        : null
+                    photos.length
+                      ? photos
+                        .map(x => (
+                          <Chip
+                            key={x._id}
+                            variant='outlined'
+                            label={x.originalName}
+                            color='secondary'
+                            onDelete={() => removePhoto(x._id)}
+                            onMouseEnter={(event) => showPreviewImage(event, x.url)}
+                            onMouseLeave={hidePreviewImage}
+                          />)
+                        )
+                      : null
                     }
                   </Stack>
                   <CKEditor initData={htmlCode} style={{marginTop: '24px'}} config={editorConfig} onChange={(e) => setHtmlCode(e.editor.getData())} />
@@ -216,6 +247,7 @@ const EditNews = () => {
               </Scrollbars>
         }
       </Paper>
+      <ImagePreview anchor={anchorPreview} data={imagePreview} closeFunc={hidePreviewImage} />
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
     </Container>
