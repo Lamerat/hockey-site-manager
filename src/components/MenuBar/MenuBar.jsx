@@ -35,7 +35,7 @@ const MenuBar = () => {
     <AppBar position='static' sx={{justifyContent: 'center', flexDirection: 'row'}}>
       <Toolbar sx={{ maxWidth: '1366px', width: '1366px', display: 'flex', justifyContent: 'space-between' }} >
         <Box>
-          <img src='./site_logo.svg' alt='site_logo' height='48px' style={{paddingTop: '3px'}} />
+          <img src={'../../site_logo.svg'} alt='site_logo' height='48px' style={{paddingTop: '3px'}} />
         </Box>
         <Box height='100%'>
           <StyledTabs value={shared.currentPage} onChange={changeTabIndex}>

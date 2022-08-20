@@ -13,6 +13,7 @@ import Players from './components/Players/Players'
 import Media from './components/Media/Media'
 import Login from './components/Login/Login'
 import AddNews from './components/AddNews/AddNews'
+import EditNews from './components/EditNews/EditNews'
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
               <Route exact path='/' element={<Login />} />
               <Route exact path='/news' element={<News />} />
               <Route exact path='/news/create' element={<AddNews />} />
+              <Route exact path='/news/:id' element={<EditNews />} />
               <Route exact path='/events' element={<Events />} />
               <Route exact path='/players' element={<Players />} />
               <Route exact path='/media' element={<Media />} />

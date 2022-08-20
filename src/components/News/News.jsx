@@ -134,6 +134,9 @@ const News = () => {
   }
 
 
+  const startEditNews = (newsId) => history(`/news/${newsId}`)
+
+
   const renderSort = (field) => {
     const newQuery = { ...query, pageNumber: 1, hasNextPage: false }
     if (!(field in query.sort)) {
@@ -199,7 +202,11 @@ const News = () => {
           news
             ? news.length
               ? <>
-                { news.filter(record => record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} previewFunc={previewNews} deleteFunction={prepareDeleteNews}/>) }
+                {
+                  news
+                    .filter(record => record.pinned)
+                    .map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} previewFunc={previewNews} editFunc={startEditNews} deleteFunction={prepareDeleteNews}/>)
+                }
                 <Scrollbars
                   style={{height: '100vh', padding: 16, paddingTop: 0, marginLeft: -16}}
                   onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
@@ -207,7 +214,9 @@ const News = () => {
                   <Box p={2} pt={0}>
                     {
                       news.filter(record => !record.pinned).length
-                        ? news.filter(record => !record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} previewFunc={previewNews} deleteFunction={prepareDeleteNews}/>)
+                        ? news
+                            .filter(record => !record.pinned)
+                            .map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} previewFunc={previewNews} editFunc={startEditNews} deleteFunction={prepareDeleteNews}/>)
                         : <Box m={2} textAlign='center'>Няма намерени записи</Box>
                     }
                   </Box>

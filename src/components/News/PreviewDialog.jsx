@@ -42,7 +42,6 @@ const PreviewDialog = ({newsId, closeFunc}) => {
       maxWidth='md'
       open={true}
       TransitionComponent={Transition}
-      // onClose={closeFunc({ show: false })}
     >
       <Box display='flex' justifyContent='flex-end' mb={-2} sx={{zIndex: 200, backgroundColor: 'white'}}>
         <IconButton size='small' onClick={() => closeFunc({ show: false })}>

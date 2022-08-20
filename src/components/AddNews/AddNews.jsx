@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Container, Paper, Box, Typography, IconButton, Tooltip, Chip , Stack , Button, TextField, FormControlLabel } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { CKEditor } from 'ckeditor4-react'
-import { editorConfig } from './AddNews.styles'
+import { editorConfig } from '../../common/ck-editor-config'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import mainTheme from '../../theme/MainTheme'
 import CloseIcon from '@mui/icons-material/Close'
@@ -44,7 +44,7 @@ const AddNews = () => {
   }
 
   const removePhoto = (id) => {
-    setPhotos(photos.filter(x => x.name !== id))
+    setPhotos(photos.filter(x => x._id !== id))
   }
 
 
@@ -145,14 +145,14 @@ const AddNews = () => {
               color='secondary'
               component='label'
               variant='outlined'
-              sx={{ width: 200, justifyContent: 'flex-start' }}
+              sx={{ minWidth: 200, justifyContent: 'flex-start' }}
               onChange={(e) => fileUploadAction(e.target.files, 'other')}
             >
               Снимки<input hidden accept='image/*' multiple type='file' />
             </Button>
             {
                 photos.length
-                  ? photos.map(x => <Chip key={x.name} variant='outlined' label={x.originalName} color='secondary' onDelete={() => removePhoto(x.name)} />)
+                  ? photos.map(x => <Chip key={x._id} variant='outlined' label={x.originalName} color='secondary' onDelete={() => removePhoto(x._id)} />)
                   : null
               }
             </Stack>
