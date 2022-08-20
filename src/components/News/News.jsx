@@ -6,7 +6,7 @@ import UserContext from '../../context/UserContext'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import NewsRow from './NewsRow'
 import { sortBox, sortLabel, rotateAngle } from '../../common/sortStyles'
-import { listNewsRequest } from '../../api/news'
+import { editNewsRequest, listNewsRequest, deleteNewsRequest } from '../../api/news'
 import mainTheme from '../../theme/MainTheme'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
@@ -15,6 +15,9 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { getCredentials, cleanCredentials } from '../../config/storage'
 import FilterMenu from './FilterMenu'
 import { badgeProps } from './News.styles'
+import ErrorDialog from '../ErrorDialog/ErrorDialog'
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
+import LinearProgress from '@mui/material/LinearProgress'
 
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false,  hasNextPage: false, sort: { createdAt: -1 }, search: '', searchFields: [], startDate: null, endDate: null }
@@ -29,9 +32,12 @@ const News = () => {
   const filterMenuRef = useRef(null)
   
   const [query, setQuery] = useState(queryDefault)
-  const [news, setNews] = useState([])
+  const [news, setNews] = useState(null)
   const [openFilterMenu, setOpenFilterMenu] = useState(false)
-  const [ filterBadge, setFilterBadge ] = useState(true)
+  const [filterBadge, setFilterBadge] = useState(true)
+  const [reloadList, setReloadList] = useState(false)
+  const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
 
   const history = useNavigate()
 
@@ -67,8 +73,8 @@ const News = () => {
         setQuery(query => ({ ...query, pageNumber: result.payload.page, hasNextPage: result.payload.hasNextPage }))
         setFilterBadge(body.startDate || body.search ? false : true)
       })
-      .catch(error => console.log(error))
-  }, [query.pageNumber, query.search, query.sort, query.endDate, query.startDate, query.searchFields, history])
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }, [query.pageNumber, query.search, query.sort, query.endDate, query.startDate, query.searchFields, history, reloadList])
 
 
   const handlePagination = (scrollTop, height, scrollHeight) => {
@@ -80,6 +86,50 @@ const News = () => {
 
 
   const addFilter = (filters) => setQuery({ ...query, ...filters, pageNumber: 1, hasNextPage: false })
+
+
+  const authError = () => {
+    cleanCredentials()
+    history('/')
+  }
+
+
+  const pinNewsAction = (newsId, action) => {
+    editNewsRequest(newsId, { pinned: action })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        query.pageNumber === 1 
+          ? setReloadList(!reloadList)
+          : setQuery({ ...query, pageNumber: 1, hasNextPage: false })
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const deleteNews = (newsId) => {
+    setConfirmDialog({ show: false, message: '' })
+    deleteNewsRequest(newsId)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        query.hasNextPage
+          ? query.pageNumber === 1 ? setReloadList(!reloadList) : setQuery({ ...query, pageNumber: 1, hasNextPage: false })
+          : setNews(news.filter(x => x._id !== result.payload._id))
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const prepareDeleteNews = (newsId, title) => {
+    setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете новина "${title}"`, acceptFunc: () => deleteNews(newsId) })
+  }
 
 
   const renderSort = (field) => {
@@ -139,17 +189,31 @@ const News = () => {
           <Box width='15%' sx={sortBox} onClick={()=> renderSort('user.name')}><Box sx={sortLabel}>Добавена от</Box>{sortArrow('user.name')}</Box>
           <Box width='5%'/>
         </Stack>
-        { news.filter(record => record.pinned).map(x => <NewsRow key={x._id} row={x} />) }
-        <Scrollbars
-          style={{height: '100vh', padding: 16, paddingTop: 0, marginLeft: -16}}
-          onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
-        >
-          <Box p={2} pt={0}>
-            { news.filter(record => !record.pinned).map(x => <NewsRow key={x._id} row={x} />) }
-          </Box>
-        </Scrollbars>
+        {
+          news
+            ? news.length
+              ? <>
+                { news.filter(record => record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} deleteFunction={prepareDeleteNews}/>) }
+                <Scrollbars
+                  style={{height: '100vh', padding: 16, paddingTop: 0, marginLeft: -16}}
+                  onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
+                >
+                  <Box p={2} pt={0}>
+                    {
+                      news.filter(record => !record.pinned).length
+                        ? news.filter(record => !record.pinned).map(x => <NewsRow key={x._id} row={x} pinnedFunction={pinNewsAction} deleteFunction={prepareDeleteNews}/>)
+                        : <Box m={2} textAlign='center'>Няма намерени записи</Box>
+                    }
+                  </Box>
+                </Scrollbars>
+                </>
+              : <Box m={2} textAlign='center'>Няма намерени записи</Box>
+            : <LinearProgress color='secondary' sx={{height: 20, borderRadius: '4px', m: 2 }}/>
+        }
       </Paper>
       <FilterMenu searchMenuRef={filterMenuRef} openMenu={openFilterMenu} setOpenMenu={setOpenFilterMenu} addFilterFunc={addFilter} />
+      { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
+      { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
     </Container>
   )
 }

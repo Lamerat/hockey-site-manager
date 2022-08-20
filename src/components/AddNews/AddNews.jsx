@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { Container, Paper, Box, Typography, IconButton, Tooltip, Chip , Stack , Button, TextField, FormControlLabel } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 import { CKEditor } from 'ckeditor4-react'
 import { editorConfig } from './AddNews.styles'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import mainTheme from '../../theme/MainTheme'
 import CloseIcon from '@mui/icons-material/Close'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import { uploadFiles } from '../../api/files'
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -14,12 +16,15 @@ import { createNewsRequest } from '../../api/news'
 
 const AddNews = () => {
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
   const [title, SetTitle] = useState({ value: '', error: false })
   const [mainPhoto, setMainPhoto] = useState(null)
   const [photos, setPhotos] = useState([])
   const [htmlCode, setHtmlCode] = useState('')
   const [checkForm, setCheckForm] = useState(false)
   const [pinned, setPinned] = useState(false)
+
+  const history = useNavigate()
   
 
   const fileUploadAction = (file, field) => {
@@ -69,8 +74,19 @@ const AddNews = () => {
     
     createNewsRequest(newsObject)
       .then(x => x.json())
-      .then(result => console.log(result))
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        history('/news')
+      })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+  const cancelCreate = () => {
+    if (title.value.trim() !== '' || htmlCode !== '' || mainPhoto || photos.length ) {
+      setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да прекратите процеса? Всички данни ще бъдат загубени!`, acceptFunc: () => history('/news') })
+    } else {
+      history('/news')
+    }
   }
 
 
@@ -83,7 +99,7 @@ const AddNews = () => {
           <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Добавяне на новина</Typography>
           <Box display='flex' alignItems='center' mr={-1}>
             <Tooltip title='Затвори' arrow placement='left'>
-              <IconButton onClick={(e) => 1}><CloseIcon color='secondary' /></IconButton>
+              <IconButton onClick={cancelCreate}><CloseIcon color='secondary' /></IconButton>
             </Tooltip>
           </Box>
         </Box>
@@ -145,6 +161,7 @@ const AddNews = () => {
         </Scrollbars>
       </Paper>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
+      { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
     </Container>
   )
 }

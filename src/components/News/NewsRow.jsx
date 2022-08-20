@@ -9,7 +9,7 @@ import mainTheme from '../../theme/MainTheme'
 import RemoveIcon from '@mui/icons-material/Remove'
 
 
-const NewsRow = ({row}) => {
+const NewsRow = ({row, pinnedFunction, deleteFunction}) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
   
@@ -36,7 +36,7 @@ const NewsRow = ({row}) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={()=> pinnedFunction(row._id, !row.pinned)}>
         <ListItemIcon>
           <Box position='relative' width='20px' height='20px'>
             { row.pinned ? <RemoveIcon color='error' sx={{position: 'absolute', bottom: -4, left: -3, transform: 'rotate(45deg)', zIndex: 10, fontSize: '30px' }} /> : null }
@@ -45,7 +45,7 @@ const NewsRow = ({row}) => {
         </ListItemIcon>
           { row.pinned ? 'Откачи' : 'Закачи' }
         </MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> deleteFunction(row._id, row.title)}>
           <ListItemIcon>
             <DeleteIcon fontSize='small' color='error'/>
           </ListItemIcon>

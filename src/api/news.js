@@ -16,3 +16,27 @@ export const createNewsRequest = async (body) => {
     body: JSON.stringify(body),
   })
 }
+
+export const deleteNewsRequest = async (_id) => {
+  return fetch(`${API}/news/${_id}`, {
+    method: 'DELETE',
+    headers: headers()
+  })
+}
+
+
+export const editNewsRequest = async (_id, body) => {
+  return fetch(`${API}/news/${_id}`, {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify(body),
+  })
+}
+
+
+export const singleNewsRequest = async (_id) => {
+  return fetch(`${API}/news/${_id}`, {
+    method: 'GET',
+    headers: headers(),
+  })
+}
