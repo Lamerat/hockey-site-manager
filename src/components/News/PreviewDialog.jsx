@@ -5,10 +5,10 @@ import Slide from '@mui/material/Slide'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { singleNewsRequest } from '../../api/news'
 import { Box, Typography, Grid, CardMedia, Divider, IconButton } from '@mui/material'
-import parse from "html-react-parser"
+import parse from 'html-react-parser'
 import { photoStyle } from './News.styles'
 import { Scrollbars } from 'react-custom-scrollbars-2'
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close'
 
 
 const Transition = React.forwardRef(function Transition(props, ref) {

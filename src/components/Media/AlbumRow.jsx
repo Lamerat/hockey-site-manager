@@ -10,7 +10,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import { menuPaperStyleSmall } from './Media.styles'
 import mainTheme from '../../theme/MainTheme'
 
-const AlbumRow = ({row, currentFolder, setCurrentFolder, setMainFunc}) => {
+const AlbumRow = ({row, currentFolder, setCurrentFolder, setMainFunc, editFunc, deleteFunc}) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
   const [selected, setSelected] = useState(false)
@@ -50,17 +50,17 @@ const AlbumRow = ({row, currentFolder, setCurrentFolder, setMainFunc}) => {
       >
         {
           !row.main
-            ? <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> setMainFunc(row._id)} >
+            ? <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => setMainFunc(row._id)} >
                 <ListItemIcon sx={{minWidth: '30px !important'}}><HomeIcon fontSize='small' color='primary'/></ListItemIcon>
                   Задай като главен
               </MenuItem>
             : null
         }
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1} >
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => editFunc(row._id, row.name)} >
           <ListItemIcon sx={{minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>
           Промени име
         </MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => deleteFunc(row._id, row.name)}>
           <ListItemIcon sx={{minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
       </Menu>
     </Box>

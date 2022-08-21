@@ -13,9 +13,11 @@ import { menuPaperStyle } from './Media.styles'
 import CircularProgress from '@mui/material/CircularProgress'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { Scrollbars } from 'react-custom-scrollbars-2'
-import { listAlbums, setMainAlbum } from '../../api/albums'
+import { createAlbum, editAlbumRequest, listAlbums, setMainAlbum, deleteAlbumRequest } from '../../api/albums'
 import AlbumRow from './AlbumRow'
 import PhotoComponent from './PhotoComponent'
+import AlbumDialog from './AlbumDialog'
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 
 
 const tempArray = [
@@ -45,6 +47,8 @@ const Media = () => {
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [albumQuery, setAlbumQuery] = useState({ page: 1, hasNextPage: false })
   const [reload, setReload] = useState({ album: false, photos: false })
+  const [showAlbumDialog, setShowAlbumDialog] = useState({ show: false, data: null, editMode: false, actionFunc: () => null })
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
   
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
@@ -109,6 +113,71 @@ const Media = () => {
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
+  
+  const prepareEditAlbum = (albumId, name) => setShowAlbumDialog({ show: true, editMode: true, data: { value: name, id: albumId }, actionFunc: editAlbum })
+
+
+  const prepareDeleteAlbum = (albumId, name) => {
+    let message = `Сигурни ли сте, че искате да изтриете албум "${name}"?<br/>Всички снимки в него ще бъдат загубени!`
+    const checkAlbum = albums.filter(x => x._id === albumId)
+    if (checkAlbum.length && checkAlbum[0].main === true) {
+      message = `Албум "${name}" е вашият <b>ГЛАВЕН АЛБУМ</b>.<br/>Снимките на първа страница в сайта на отбора са тези от него.
+      <br/>
+      Ако след изтриването му не посочите нов главен албум, може да има проблеми със сайта.<br/><br/>
+      Сигурни ли сте, че искате да изтриете албум "${name}"?<br/>Всички снимки в него ще бъдат загубени!`
+    }
+    setConfirmDialog({ show: true, message, acceptFunc: () => deleteAlbum(albumId) })
+  }
+
+
+  const deleteAlbum = (albumId) => {
+    setConfirmDialog({ show: false, message: '' })
+    deleteAlbumRequest(albumId)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        albumQuery.hasNextPage
+          ? setReload({ ...reload, album: !reload.album })
+          : setAlbums(albums.filter(x => x._id !== result.payload._id))
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const addNewAlbum = (name) => {
+    createAlbum({ name })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        albumQuery.page === 1
+          ? setReload({ ...reload, album: !reload.album })
+          : setAlbumQuery({ page: 1 })
+        setShowAlbumDialog({ show: false })
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const editAlbum = (id, name) => {
+    editAlbumRequest(id, { name })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setShowAlbumDialog({ show: false })
+        setAlbums(albums.map(x => x._id === result.payload._id ? result.payload : x))
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
 
   useEffect(() => {
     if(firstRenderSharedRef.current) {
@@ -129,7 +198,7 @@ const Media = () => {
               <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Албуми</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
                 <Tooltip title='Добави нов' arrow>
-                  <IconButton onClick={(e) => 1}>
+                  <IconButton onClick={() => setShowAlbumDialog({ show: true, editMode: false, data: null, actionFunc: addNewAlbum })}>
                     <LibraryAddIcon color='secondary' />
                   </IconButton>
                 </Tooltip>
@@ -144,7 +213,15 @@ const Media = () => {
               {
                 albums
                   ? albums.length
-                    ? albums.map(x => <AlbumRow row={x} currentFolder={currentFolder} setCurrentFolder={setCurrentFolder} setMainFunc={setMain} key={x._id} />)
+                    ? albums.map(x => (
+                      <AlbumRow
+                        row={x}
+                        currentFolder={currentFolder}
+                        setCurrentFolder={setCurrentFolder}
+                        deleteFunc={prepareDeleteAlbum}
+                        editFunc={prepareEditAlbum}
+                        setMainFunc={setMain} key={x._id}
+                      />))
                     : 'Нямате нито един албум'
                   : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
               }
@@ -195,6 +272,8 @@ const Media = () => {
           <ListItemIcon><PhotoSizeSelectSmallIcon fontSize='small' color='primary'/></ListItemIcon>Малки</MenuItem>
       </Menu>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
+      { showAlbumDialog.show ? <AlbumDialog editMode={showAlbumDialog.editMode} data={showAlbumDialog.data} actionFunc={showAlbumDialog.actionFunc} closeFunc={setShowAlbumDialog} /> : null }
+      { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
     </Container>
   )
 }
