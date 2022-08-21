@@ -63,19 +63,28 @@ const Media = () => {
       history('/')
     }
 
-    listAlbums({ pageNumber: albumQuery.page, pageSize: 40 })
+    listAlbums({ pageNumber: albumQuery.page, pageSize: 25 })
       .then(x => {
         if (x.status === 401) authError()
         return x.json()
       })
       .then(result => {
         if (!result.success) throw new Error(result.message)
-        setAlbums(result.payload.docs)
-        setCurrentFolder(result.payload.docs[0]._id)
+        setAlbums(albums => albumQuery.page === 1 ? result.payload.docs : [ ...albums, ...result.payload.docs])
+        setAlbumQuery({ page: result.payload.page, hasNextPage: result.payload.hasNextPage })
+        if (result.payload.page === 1) setCurrentFolder(result.payload.docs[0]._id)
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
 
   }, [history, albumQuery.page])
+
+
+  const handlePagination = (scrollTop, height, scrollHeight, column) => {
+    if (scrollTop + height < scrollHeight - 20) return
+    if (column === 'album' && albumQuery.hasNextPage) {
+      setAlbumQuery({ page: albumQuery.page + 1 })
+    }
+  }
 
 
   useEffect(() => {
@@ -107,6 +116,7 @@ const Media = () => {
                 autoHeight
                 autoHeightMin={100}
                 autoHeightMax='calc(100vh - 187px)'
+                onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight, 'album')}
               >
               {
                 albums
@@ -120,7 +130,7 @@ const Media = () => {
           </Paper>
         </Grid>
         <Grid item xs={8}>
-          <Paper elevation={2} sx={{p: 2, pb: 0, maxHeight: 'calc(100vh - 130px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
+          <Paper elevation={2} sx={{p: 2, pb: 1, maxHeight: 'calc(100vh - 130px - 8px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
             <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
               <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Албум 01</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
@@ -137,7 +147,7 @@ const Media = () => {
               </Box>
             </Box>
               <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16}} >
-                <Grid container spacing={2} sx={{pl: 2, pr: 2, pb: 2}}>
+                <Grid container spacing={2} sx={{pl: 2, pr: 2, pb: 1}}>
                   { tempArray.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} />) }
                 </Grid>
               </Scrollbars>

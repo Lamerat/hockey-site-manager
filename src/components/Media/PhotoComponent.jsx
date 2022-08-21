@@ -37,13 +37,13 @@ const PhotoComponent = ({row, imageSize}) => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1} >
-          <ListItemIcon><EditIcon fontSize='small' color='primary'/></ListItemIcon>Промени име</MenuItem>
+          <ListItemIcon sx={{minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>Промени име</MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1} >
-          <ListItemIcon><DriveFileMoveIcon fontSize='small' color='primary'/></ListItemIcon>Премести</MenuItem>
+          <ListItemIcon sx={{minWidth: '30px !important'}}><DriveFileMoveIcon fontSize='small' color='primary'/></ListItemIcon>Премести</MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
-          <ListItemIcon><ShareIcon fontSize='small' color='primary'/></ListItemIcon>Сподели</MenuItem>
+          <ListItemIcon sx={{minWidth: '30px !important'}}><ShareIcon fontSize='small' color='primary'/></ListItemIcon>Сподели</MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
-          <ListItemIcon><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
+          <ListItemIcon sx={{minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
       </Menu>
     </Grid>
   )
