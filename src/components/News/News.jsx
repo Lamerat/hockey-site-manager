@@ -230,7 +230,6 @@ const News = () => {
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       { showPreviewDialog.show ? <PreviewDialog newsId={showPreviewDialog.data} closeFunc={setShowPreviewDialog}/> : null }
-      
     </Container>
   )
 }
