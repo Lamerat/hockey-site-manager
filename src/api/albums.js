@@ -9,3 +9,11 @@ export const listAlbums = async (body) => {
   })
 }
 
+
+export const setMainAlbum = async (_id) => {
+  return fetch(`${API}/album/main/${_id}`, {
+    method: 'PUT',
+    headers: headers(),
+  })
+}
+

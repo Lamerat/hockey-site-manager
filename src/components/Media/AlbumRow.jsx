@@ -10,7 +10,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import { menuPaperStyleSmall } from './Media.styles'
 import mainTheme from '../../theme/MainTheme'
 
-const AlbumRow = ({row, currentFolder, setCurrentFolder}) => {
+const AlbumRow = ({row, currentFolder, setCurrentFolder, setMainFunc}) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
   const [selected, setSelected] = useState(false)
@@ -50,7 +50,7 @@ const AlbumRow = ({row, currentFolder, setCurrentFolder}) => {
       >
         {
           !row.main
-            ? <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1} >
+            ? <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> setMainFunc(row._id)} >
                 <ListItemIcon sx={{minWidth: '30px !important'}}><HomeIcon fontSize='small' color='primary'/></ListItemIcon>
                   Задай като главен
               </MenuItem>

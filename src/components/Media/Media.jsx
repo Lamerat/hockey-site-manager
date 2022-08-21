@@ -13,7 +13,7 @@ import { menuPaperStyle } from './Media.styles'
 import CircularProgress from '@mui/material/CircularProgress'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { Scrollbars } from 'react-custom-scrollbars-2'
-import { listAlbums } from '../../api/albums'
+import { listAlbums, setMainAlbum } from '../../api/albums'
 import AlbumRow from './AlbumRow'
 import PhotoComponent from './PhotoComponent'
 
@@ -44,6 +44,7 @@ const Media = () => {
   const [currentFolder, setCurrentFolder] = useState(null)
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [albumQuery, setAlbumQuery] = useState({ page: 1, hasNextPage: false })
+  const [reload, setReload] = useState({ album: false, photos: false })
   
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
@@ -76,7 +77,7 @@ const Media = () => {
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
 
-  }, [history, albumQuery.page])
+  }, [history, albumQuery.page, reload.album])
 
 
   const handlePagination = (scrollTop, height, scrollHeight, column) => {
@@ -84,6 +85,28 @@ const Media = () => {
     if (column === 'album' && albumQuery.hasNextPage) {
       setAlbumQuery({ page: albumQuery.page + 1 })
     }
+  }
+
+
+  const authError = () => {
+    cleanCredentials()
+    history('/')
+  }
+
+
+  const setMain = (albumId) => {
+    setMainAlbum(albumId)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        albumQuery.page === 1
+          ? setReload({ ...reload, album: !reload.album })
+          : setAlbumQuery({ page: 1 })
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
 
@@ -121,7 +144,7 @@ const Media = () => {
               {
                 albums
                   ? albums.length
-                    ? albums.map(x => <AlbumRow row={x} currentFolder={currentFolder} setCurrentFolder={setCurrentFolder} key={x._id} />)
+                    ? albums.map(x => <AlbumRow row={x} currentFolder={currentFolder} setCurrentFolder={setCurrentFolder} setMainFunc={setMain} key={x._id} />)
                     : 'Нямате нито един албум'
                   : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
               }
