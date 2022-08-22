@@ -18,40 +18,34 @@ import AlbumRow from './AlbumRow'
 import PhotoComponent from './PhotoComponent'
 import AlbumDialog from './AlbumDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
+import { listPhotosRequest } from '../../api/photo'
 
-
-const tempArray = [
-  { _id: 1, address: './temp1.jpg', caption: 'Няма описание' },
-  { _id: 2, address: './temp2.jpg', caption: 'Няма описание' },
-  { _id: 3, address: './temp3.jpg', caption: 'Няма описание' },
-  { _id: 4, address: './temp1.jpg', caption: 'Няма описание' },
-  { _id: 5, address: './temp2.jpg', caption: 'Няма описание' },
-  { _id: 6, address: './temp3.jpg', caption: 'Няма описание' },
-]
 
 const imageSizeConst = {
-  small: { gridSpacing: 3, height: '120px', icon: <PhotoSizeSelectSmallIcon color='secondary' /> },
-  middle: { gridSpacing: 4, height: '160px', icon: <PhotoSizeSelectLargeIcon color='secondary' /> },
-  large: { gridSpacing: 6, height: '260px', icon: <PhotoSizeSelectActualIcon color='secondary' /> },
+  small: { gridSpacing: 3, height: '120px', icon: <PhotoSizeSelectSmallIcon color='secondary' />, pageSize: 25 },
+  middle: { gridSpacing: 4, height: '160px', icon: <PhotoSizeSelectLargeIcon color='secondary' />, pageSize: 15 },
+  large: { gridSpacing: 6, height: '260px', icon: <PhotoSizeSelectActualIcon color='secondary' />, pageSize: 8 },
 }
-
 
 const Media = () => {
   const { setShared } = useContext(SharedContext)
   const { user } = useContext(UserContext)
   
+  const [albums, setAlbums] = useState(null)
+  const [images, setImages] = useState(null)
+  const [albumQuery, setAlbumQuery] = useState({ page: 1, hasNextPage: false })
+  const [imageQuery, setImageQuery] = useState({ page: 1, pageSize: 15, hasNextPage: false })
   const [imageSize, setImageSize] = useState(imageSizeConst.middle)
   const [anchorEl, setAnchorEl] = useState(null)
-  const [albums, setAlbums] = useState(null)
   const [currentFolder, setCurrentFolder] = useState(null)
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
-  const [albumQuery, setAlbumQuery] = useState({ page: 1, hasNextPage: false })
   const [reload, setReload] = useState({ album: false, photos: false })
   const [showAlbumDialog, setShowAlbumDialog] = useState({ show: false, data: null, editMode: false, actionFunc: () => null })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
   
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
+  const prevCurrent = useRef(null)
   const open = Boolean(anchorEl)
 
   const history = useNavigate()
@@ -68,7 +62,7 @@ const Media = () => {
       history('/')
     }
 
-    listAlbums({ pageNumber: albumQuery.page, pageSize: 25 })
+    listAlbums({ pageNumber: albumQuery.page, pageSize: 20 })
       .then(x => {
         if (x.status === 401) authError()
         return x.json()
@@ -84,10 +78,40 @@ const Media = () => {
   }, [history, albumQuery.page, reload.album])
 
 
+  useEffect(() => {
+    if (!currentFolder) return
+
+    const authError = () => {
+      cleanCredentials()
+      history('/')
+    }
+
+    const page = currentFolder !== prevCurrent.current ? 1 : imageQuery.page
+
+    listPhotosRequest({ album: currentFolder, pageNumber: page, pageSize: imageQuery.pageSize })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setImages(images => result.payload.page === 1  ? result.payload.docs : [ ...images, ...result.payload.docs])
+        setImageQuery({ page: result.payload.page, pageSize: result.payload.limit, hasNextPage: result.payload.hasNextPage })
+        prevCurrent.current = currentFolder
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }, [currentFolder, imageQuery.page, imageQuery.pageSize, history])
+
+
   const handlePagination = (scrollTop, height, scrollHeight, column) => {
     if (scrollTop + height < scrollHeight - 20) return
+
     if (column === 'album' && albumQuery.hasNextPage) {
       setAlbumQuery({ page: albumQuery.page + 1 })
+    }
+
+    if (column === 'photo' && imageQuery.hasNextPage) {
+      setImageQuery({ page: albumQuery.page + 1, pageSize: imageSize.pageSize })
     }
   }
 
@@ -179,6 +203,12 @@ const Media = () => {
   }
 
 
+  const changeImageSize = (size) => {
+    setImageSize(imageSizeConst[size])
+    setImageQuery({ page: 1, pageSize: imageSizeConst[size].pageSize, hasNextPage: false })
+  }
+
+
   useEffect(() => {
     if(firstRenderSharedRef.current) {
       firstRenderSharedRef.current = false
@@ -246,9 +276,18 @@ const Media = () => {
                 </Tooltip>
               </Box>
             </Box>
-              <Scrollbars style={{height: '100vh', padding: 16, marginLeft: -16}} >
+              <Scrollbars
+                style={{height: '100vh', padding: 16, marginLeft: -16}}
+                onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight, 'photo')}
+              >
                 <Grid container spacing={2} sx={{pl: 2, pr: 2, pb: 1}}>
-                  { tempArray.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} />) }
+                  {
+                    images
+                      ? images.length
+                        ? images.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} />)
+                        : <Box width='100%' textAlign='center' justifyContent='center' padding={5}>{'Албумът е празен'}</Box>
+                      : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
+                  }
                 </Grid>
               </Scrollbars>
           </Paper>
@@ -264,11 +303,11 @@ const Media = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={() => setImageSize(imageSizeConst.large)}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={() => changeImageSize('large')}>
           <ListItemIcon><PhotoSizeSelectActualIcon fontSize='small' color='primary' /></ListItemIcon>Големи</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> setImageSize(imageSizeConst.middle)} >
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> changeImageSize('middle')} >
           <ListItemIcon><PhotoSizeSelectLargeIcon fontSize='small' color='primary'/></ListItemIcon>Средни</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> setImageSize(imageSizeConst.small)}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> changeImageSize('small')}>
           <ListItemIcon><PhotoSizeSelectSmallIcon fontSize='small' color='primary'/></ListItemIcon>Малки</MenuItem>
       </Menu>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
