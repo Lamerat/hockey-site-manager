@@ -71,7 +71,7 @@ const Media = () => {
         if (!result.success) throw new Error(result.message)
         setAlbums(albums => albumQuery.page === 1 ? result.payload.docs : [ ...albums, ...result.payload.docs])
         setAlbumQuery({ page: result.payload.page, hasNextPage: result.payload.hasNextPage })
-        if (result.payload.page === 1) setCurrentFolder(result.payload.docs[0]._id)
+        if (result.payload.page === 1) setCurrentFolder({ id: result.payload.docs[0]._id, name: result.payload.docs[0].name })
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
 
@@ -86,9 +86,9 @@ const Media = () => {
       history('/')
     }
 
-    const page = currentFolder !== prevCurrent.current ? 1 : imageQuery.page
+    const page = currentFolder.id !== prevCurrent.current ? 1 : imageQuery.page
 
-    listPhotosRequest({ album: currentFolder, pageNumber: page, pageSize: imageQuery.pageSize })
+    listPhotosRequest({ album: currentFolder.id, pageNumber: page, pageSize: imageQuery.pageSize })
       .then(x => {
         if (x.status === 401) authError()
         return x.json()
@@ -97,7 +97,7 @@ const Media = () => {
         if (!result.success) throw new Error(result.message)
         setImages(images => result.payload.page === 1  ? result.payload.docs : [ ...images, ...result.payload.docs])
         setImageQuery({ page: result.payload.page, pageSize: result.payload.limit, hasNextPage: result.payload.hasNextPage })
-        prevCurrent.current = currentFolder
+        prevCurrent.current = currentFolder.id
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }, [currentFolder, imageQuery.page, imageQuery.pageSize, history])
@@ -262,7 +262,7 @@ const Media = () => {
         <Grid item xs={8}>
           <Paper elevation={2} sx={{p: 2, pb: 1, maxHeight: 'calc(100vh - 130px - 8px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
             <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
-              <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Албум 01</Typography>
+              <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>{currentFolder?.name}</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
                 <Tooltip title='Размер на изображенията' arrow>
                   <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
@@ -286,7 +286,7 @@ const Media = () => {
                       ? images.length
                         ? images.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} />)
                         : <Box width='100%' textAlign='center' justifyContent='center' padding={5}>{'Албумът е празен'}</Box>
-                      : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
+                      : <Box width='100%' display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
                   }
                 </Grid>
               </Scrollbars>

@@ -23,10 +23,10 @@ const AlbumRow = ({row, currentFolder, setCurrentFolder, setMainFunc, editFunc, 
       onMouseEnter={() => setSelected(true)}
       onMouseLeave={() => setSelected(false)}
     >
-      <Box display='flex' alignItems='center' width='100%' onClick={() => setCurrentFolder(row._id)}>
+      <Box display='flex' alignItems='center' width='100%' onClick={() => setCurrentFolder({ id: row._id, name: row.name })}>
         <Box display='flex' alignItems='center' position='relative'>
           {
-            currentFolder === row._id
+            currentFolder.id === row._id
               ? <FolderOpenIcon color='secondary' sx={{position: 'relative'}} />
               : <FolderIcon color='secondary' sx={{position: 'relative'}} />
           }
