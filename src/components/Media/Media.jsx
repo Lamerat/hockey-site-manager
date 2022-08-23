@@ -18,7 +18,7 @@ import AlbumRow from './AlbumRow'
 import PhotoComponent from './PhotoComponent'
 import AlbumDialog from './AlbumDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
-import { listPhotosRequest } from '../../api/photo'
+import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest } from '../../api/photo'
 
 
 const imageSizeConst = {
@@ -42,6 +42,7 @@ const Media = () => {
   const [reload, setReload] = useState({ album: false, photos: false })
   const [showAlbumDialog, setShowAlbumDialog] = useState({ show: false, data: null, editMode: false, actionFunc: () => null })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
+  const [dragStart, setDragStart] = useState(null)
   
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
@@ -79,7 +80,7 @@ const Media = () => {
 
 
   useEffect(() => {
-    if (!currentFolder) return
+    if (!currentFolder?.id) return
 
     const authError = () => {
       cleanCredentials()
@@ -100,7 +101,7 @@ const Media = () => {
         prevCurrent.current = currentFolder.id
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }, [currentFolder, imageQuery.page, imageQuery.pageSize, history])
+  }, [currentFolder?.id, imageQuery.page, imageQuery.pageSize, reload.photos, history])
 
 
   const handlePagination = (scrollTop, height, scrollHeight, column) => {
@@ -119,6 +120,29 @@ const Media = () => {
   const authError = () => {
     cleanCredentials()
     history('/')
+  }
+
+
+  const uploadPhotos = (file) => {
+    if (!file || !file.length) return
+
+    const formData = new FormData()
+    formData.append('album', currentFolder.id)
+    for (let i = 0; i < file.length; i++) formData.append('images', file[i])
+
+    
+    uploadPhotosRequest(formData)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        imageQuery.hasNextPage
+          ? setReload({ ...reload, photos: !reload.photos })
+          : setImages([ ...result.payload, ...images ])
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
 
@@ -198,6 +222,7 @@ const Media = () => {
         if (!result.success) throw new Error(result.message)
         setShowAlbumDialog({ show: false })
         setAlbums(albums.map(x => x._id === result.payload._id ? result.payload : x))
+        if (result.payload._id === currentFolder.id) setCurrentFolder({ ...currentFolder,name })
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -206,6 +231,38 @@ const Media = () => {
   const changeImageSize = (size) => {
     setImageSize(imageSizeConst[size])
     setImageQuery({ page: 1, pageSize: imageSizeConst[size].pageSize, hasNextPage: false })
+  }
+
+
+  const changeImagePosition = (target) => {
+    if (target === dragStart) return
+
+    const draggedImage = images.filter(x => x.position === dragStart)[0]
+    const targetImage = images.filter(x => x.position === target)[0]
+    
+    draggedImage.position = target
+    targetImage.position = dragStart
+
+    const updateBody = [ draggedImage, targetImage ].map(x => ({ _id: x._id, position: x.position }))
+    changePositionsRequest({ photos: updateBody })
+    .then(x => {
+      if (x.status === 401) authError()
+      return x.json()
+    })
+    .then(result => {
+      if (!result.success) throw new Error(result.message)
+      const newImages = images.map(x => {
+        if (x.position === targetImage.position) {
+          return draggedImage
+        } else if (x.position === draggedImage.position) {
+          return targetImage
+        }
+        return x
+      })
+      setImages(newImages)
+
+    })
+    .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
 
@@ -270,7 +327,8 @@ const Media = () => {
                   </IconButton>
                 </Tooltip>
                 <Tooltip title='Добави нова' arrow>
-                  <IconButton onClick={(e) => 1}>
+                  <IconButton component='label' onClick={(e) => e.target.value = ''}>
+                    <input hidden multiple accept='image/*' type='file' onChange={(e) => uploadPhotos(e.target.files)} />
                     <LibraryAddIcon color='secondary' />
                   </IconButton>
                 </Tooltip>
@@ -284,7 +342,7 @@ const Media = () => {
                   {
                     images
                       ? images.length
-                        ? images.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} />)
+                        ? images.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} changePositionFunc={changeImagePosition} setStartPosition={setDragStart} />)
                         : <Box width='100%' textAlign='center' justifyContent='center' padding={5}>{'Албумът е празен'}</Box>
                       : <Box width='100%' display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
                   }

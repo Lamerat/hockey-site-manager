@@ -10,21 +10,26 @@ import EditIcon from '@mui/icons-material/Edit'
 
 
 
-const PhotoComponent = ({row, imageSize}) => {
+const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc }) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
+
   return (
     <Grid item xs={imageSize.gridSpacing}>
-      <Paper elevation={2} sx={{p: 1, backgroundColor: mainTheme.palette.primary.superLight}}>
+      <Paper name={row.position} elevation={2} sx={{p: 1, backgroundColor: mainTheme.palette.primary.superLight}} draggable
+        onDragStart={() => setStartPosition(row.position)}
+        onDrop={() => changePositionFunc(row.position)}
+        onDragOver={(e) => e.preventDefault()}
+      >
         <Box display='flex' alignItems='center' justifyContent='space-between' mb={1}>
-          <Typography fontFamily='CorsaGrotesk' variant='caption'>{row.caption}</Typography>
+          <Typography fontFamily='CorsaGrotesk' variant='caption'>{row.name}</Typography>
           <Box display='flex' alignItems='center' mr={-0.5} >
-            <IconButton size='small' onClick={() => setOpenMenu(!openMenu)} ref={anchor}>
+            <IconButton size='small' onClick={() => setOpenMenu(!openMenu)} ref={anchor} >
               <MoreVertIcon fontSize='small' />
             </IconButton>
           </Box>
         </Box>
-        <CardMedia component='img' height={imageSize.height} image={row.address} sx={{borderRadius: 1}} />
+        <CardMedia component='img' height={imageSize.height} image={row.address} sx={{borderRadius: 1}} draggable={false} />
       </Paper>
       <Menu
         anchorEl={anchor.current}
