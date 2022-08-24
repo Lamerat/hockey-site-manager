@@ -43,11 +43,14 @@ const Media = () => {
   const [showAlbumDialog, setShowAlbumDialog] = useState({ show: false, data: null, editMode: false, actionFunc: () => null })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
   const [dragStart, setDragStart] = useState(null)
+  const [globalEdit, setGlobalEdit] = useState(false)
   
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
   const prevCurrent = useRef(null)
+
   const open = Boolean(anchorEl)
+  const opacity = globalEdit ? 0.2 : 1
 
   const history = useNavigate()
 
@@ -140,7 +143,7 @@ const Media = () => {
         if (!result.success) throw new Error(result.message)
         imageQuery.hasNextPage
           ? setReload({ ...reload, photos: !reload.photos })
-          : setImages([ ...result.payload, ...images ])
+          : setImages([ ...result.payload, ...images.map(x => ({ ...x, position: x.position + 1 })) ])
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -304,12 +307,12 @@ const Media = () => {
       <Grid container spacing={4}>
         <Grid item xs={3}>
           <Paper elevation={2} sx={{pb: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
-            <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} m={2} borderColor={mainTheme.palette.secondary.main} mb={1}>
-              <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Албуми</Typography>
+            <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} m={2} borderColor={`rgb(38, 166, 154, ${opacity})`} mb={1}>
+              <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' sx={{opacity}} pb={0.5}>Албуми</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
                 <Tooltip title='Добави нов' arrow>
-                  <IconButton onClick={() => setShowAlbumDialog({ show: true, editMode: false, data: null, actionFunc: addNewAlbum })}>
-                    <LibraryAddIcon color='secondary' />
+                  <IconButton disabled={globalEdit} onClick={() => setShowAlbumDialog({ show: true, editMode: false, data: null, actionFunc: addNewAlbum })}>
+                    <LibraryAddIcon color='secondary' sx={{opacity}} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -326,11 +329,13 @@ const Media = () => {
                     ? albums.map(x => (
                       <AlbumRow
                         row={x}
+                        key={x._id}
                         currentFolder={currentFolder}
                         setCurrentFolder={setCurrentFolder}
                         deleteFunc={prepareDeleteAlbum}
                         editFunc={prepareEditAlbum}
-                        setMainFunc={setMain} key={x._id}
+                        setMainFunc={setMain}
+                        globalEdit={globalEdit}
                       />))
                     : 'Нямате нито един албум'
                   : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
@@ -341,18 +346,18 @@ const Media = () => {
         </Grid>
         <Grid item xs={8}>
           <Paper elevation={2} sx={{p: 2, pb: 1, maxHeight: 'calc(100vh - 130px - 8px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
-            <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
-              <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>{currentFolder?.name}</Typography>
+            <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={`rgb(38, 166, 154, ${opacity})`} mb={1}>
+              <Typography fontFamily='CorsaGrotesk' sx={{opacity}} color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>{currentFolder?.name}</Typography>
               <Box display='flex' alignItems='center' mr={-1}>
                 <Tooltip title='Размер на изображенията' arrow>
-                  <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                  <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} disabled={globalEdit} sx={{opacity}}>
                     {imageSize.icon}
                   </IconButton>
                 </Tooltip>
                 <Tooltip title='Добави нова' arrow>
-                  <IconButton component='label' onClick={(e) => e.target.value = ''}>
+                  <IconButton component='label' onClick={(e) => e.target.value = ''} disabled={globalEdit}>
                     <input hidden multiple accept='image/*' type='file' onChange={(e) => uploadPhotos(e.target.files)} />
-                    <LibraryAddIcon color='secondary' />
+                    <LibraryAddIcon color='secondary' sx={{opacity}} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -372,9 +377,10 @@ const Media = () => {
                             imageSize={imageSize}
                             changePositionFunc={changeImagePosition}
                             setStartPosition={setDragStart}
-                            errorDialog={errorDialog}
                             setErrorDialog={setErrorDialog}
                             deleteFunc={prepareDeletePhoto}
+                            globalEdit={globalEdit}
+                            setGlobalEdit={setGlobalEdit}
                           />))
                         : <Box width='100%' textAlign='center' justifyContent='center' padding={5}>{'Албумът е празен'}</Box>
                       : <Box width='100%' display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>

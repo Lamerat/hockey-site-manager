@@ -19,7 +19,9 @@ const NewsRow = ({row, pinnedFunction, deleteFunction, editFunc, previewFunc}) =
   return (
     <Paper elevation={1} sx={{p: 1.5, mt: 1, ...pinnedStyle}}>
       <Stack direction='row' alignItems='center' minHeight={28}>
-        <Box width='55%' fontFamily='CorsaGrotesk' fontSize='14px' sx={{cursor: 'pointer'}} onClick={() => previewFunc(row._id)}>{row.title}</Box>
+        <Box width='55%' fontFamily='CorsaGrotesk' fontSize='14px' sx={{cursor: 'pointer'}} onClick={() => previewFunc(row._id)}>
+          {row.title.length > 80 ? `${row.title.slice(0, 80)} ...` : row.title}
+        </Box>
         <Box width='10%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.photosCount}</Box>
         <Box width='15%' fontFamily='CorsaGrotesk' fontSize='14px'>{formatDate(row.createdAt)}</Box>
         <Box width='15%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.user.name}</Box>

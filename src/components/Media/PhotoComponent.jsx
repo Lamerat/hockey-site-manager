@@ -16,7 +16,7 @@ import { cleanCredentials } from '../../config/storage'
 
 const TextFieldInput = { disableUnderline: true, sx: { fontSize: '12px', letterSpacing: '0.03333em', fontFamily: 'CorsaGrotesk' }}
 
-const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, deleteFunc, errorDialog, setErrorDialog }) => {
+const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, deleteFunc, setErrorDialog, globalEdit, setGlobalEdit }) => {
   const menuAnchor = useRef(null)
   const textRef = useRef(null)
   const oldName = useRef(null)
@@ -25,6 +25,7 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
   const [editMode, setEditMode] = useState(false)
   const [name, setName] = useState(row.name || `Снимка ${row.position}`)
 
+  const opacity = globalEdit && !editMode ? 0.2 : 1
   const history = useNavigate()
 
   useEffect(() => {
@@ -34,12 +35,14 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
 
   const enterEditMode = () => {
     oldName.current = name
+    setGlobalEdit(true)
     setEditMode(true)
   }
 
 
   const cancelEdit = () => {
     setName(oldName.current)
+    setGlobalEdit(false)
     setEditMode(false)
   }
 
@@ -62,6 +65,7 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
       })
       .then(result => {
         if (!result.success) throw new Error(result.message)
+        setGlobalEdit(false)
         setEditMode(false)
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
@@ -70,7 +74,7 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
   return (
     <Grid item xs={imageSize.gridSpacing}>
       <Paper name={row.position} elevation={2} sx={{p: 1, backgroundColor: mainTheme.palette.primary.superLight}}
-        draggable={ editMode ? false : true }
+        draggable={ globalEdit ? false : true }
         onDragStart={() => setStartPosition(row.position)}
         onDrop={() => changePositionFunc(row.position)}
         onDragOver={(e) => e.preventDefault()}
@@ -85,20 +89,21 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
                   inputRef={textRef}
                   sx={{ width: 'calc(100% - 64px)' }}
                   onChange={(e) => setName(e.target.value) }
+                  onKeyDown={(key) => key.key === 'Enter' ? updateName() : null}
                 />
                 <IconButton size='small' sx={{mr: -1.5}} onClick={updateName}><CheckIcon color='secondary'/></IconButton>
                 <IconButton size='small' sx={{mr: -0.5}} onClick={cancelEdit}><CloseIcon color='error'/></IconButton>
               </Box>
             : <Box display='flex' alignItems='center' justifyContent='space-between' mb={1} maxHeight={30}>
-                <Typography fontFamily='CorsaGrotesk' variant='caption'>
+                <Typography fontFamily='CorsaGrotesk' variant='caption' sx={{opacity}}>
                   {name.length > imageSize.maxSymbols ? `${name.slice(0, imageSize.maxSymbols)} ...` : name}
                 </Typography>
-                <IconButton sx={{mr: -0.5}} size='small' onClick={() => setOpenMenu(!openMenu)} ref={menuAnchor} >
+                <IconButton sx={{mr: -0.5, opacity}} size='small' onClick={() => setOpenMenu(!openMenu)} ref={menuAnchor} disabled={globalEdit} >
                   <MoreVertIcon fontSize='small' />
                 </IconButton>
               </Box>
         }
-        <CardMedia component='img' height={imageSize.height} image={row.address} sx={{borderRadius: 1}} draggable={false} />
+        <CardMedia component='img' height={imageSize.height} image={row.address} sx={{borderRadius: 1, opacity: globalEdit && !editMode ? 0.1 : 1}} draggable={false} />
       </Paper>
       <Menu
         anchorEl={menuAnchor.current}

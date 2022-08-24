@@ -10,33 +10,36 @@ import HomeIcon from '@mui/icons-material/Home';
 import { menuPaperStyleSmall } from './Media.styles'
 import mainTheme from '../../theme/MainTheme'
 
-const AlbumRow = ({row, currentFolder, setCurrentFolder, setMainFunc, editFunc, deleteFunc}) => {
+const AlbumRow = ({ row, currentFolder, setCurrentFolder, setMainFunc, editFunc, deleteFunc, globalEdit }) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
   const [selected, setSelected] = useState(false)
+
+  const opacity = globalEdit ? 0.2 : 1
+
   return (
     <Box
       display='flex'
       minHeight={40}
       justifyContent='space-between'
-      sx={{cursor: 'pointer', ml: 0, pl: 2, mr: 0, pr: 2, backgroundColor: selected ? mainTheme.palette.secondary.superLight : 'white'}}
-      onMouseEnter={() => setSelected(true)}
-      onMouseLeave={() => setSelected(false)}
+      sx={{cursor: globalEdit ? 'default' : 'pointer', ml: 0, pl: 2, mr: 0, pr: 2, backgroundColor: selected ? mainTheme.palette.secondary.superLight : 'white'}}
+      onMouseEnter={ globalEdit ? null : () => setSelected(true)}
+      onMouseLeave={ globalEdit ? null : () => setSelected(false)}
     >
-      <Box display='flex' alignItems='center' width='100%' onClick={() => setCurrentFolder({ id: row._id, name: row.name })}>
+      <Box display='flex' alignItems='center' width='100%' onClick={ globalEdit ? null : () => setCurrentFolder({ id: row._id, name: row.name })}>
         <Box display='flex' alignItems='center' position='relative'>
           {
             currentFolder.id === row._id
-              ? <FolderOpenIcon color='secondary' sx={{position: 'relative'}} />
-              : <FolderIcon color='secondary' sx={{position: 'relative'}} />
+              ? <FolderOpenIcon color='secondary' sx={{position: 'relative', opacity}} />
+              : <FolderIcon color='secondary' sx={{position: 'relative', opacity}} />
           }
-          { row.locked ? <LockIcon color='primary' fontSize='10px' sx={{ position: 'absolute', top: -3, left: 12 }} /> : null }
-          { row.main ? <HomeIcon color='primary' fontSize='10px' sx={{ position: 'absolute', top: -3, left: 12 }} /> : null }
+          { row.locked ? <LockIcon color='primary' fontSize='10px' sx={{ position: 'absolute', top: -3, left: 12, opacity }} /> : null }
+          { row.main ? <HomeIcon color='primary' fontSize='10px' sx={{ position: 'absolute', top: -3, left: 12, opacity }} /> : null }
         </Box>
-        <Typography variant='body2' fontFamily='CorsaGrotesk' ml={1}>{ row.name.length > 22 ? `${row.name.slice(0, 22)}...` : row.name }</Typography>
+        <Typography sx={{opacity}} variant='body2' fontFamily='CorsaGrotesk' ml={1}>{ row.name.length > 22 ? `${row.name.slice(0, 22)}...` : row.name }</Typography>
       </Box>
       <Box display='flex' alignItems='center'>
-        <IconButton size='small' ref={anchor} onClick={() => setOpenMenu(!openMenu)} disabled={row.locked}><MoreVertIcon fontSize='small' /></IconButton>
+        <IconButton size='small' ref={anchor} onClick={() => setOpenMenu(!openMenu)} disabled={row.locked || globalEdit}><MoreVertIcon fontSize='small' sx={{opacity}}/></IconButton>
       </Box>
       <Menu
         anchorEl={anchor.current}
