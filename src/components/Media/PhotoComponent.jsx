@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { Paper, Box, Typography, IconButton, Grid, ListItemIcon, CardMedia, Menu, MenuItem, TextField } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 import mainTheme from '../../theme/MainTheme'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { menuPaperStyleSmall } from './Media.styles'
@@ -9,10 +10,13 @@ import ShareIcon from '@mui/icons-material/Share'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
+import { changeNameRequest } from '../../api/photo'
+import { cleanCredentials } from '../../config/storage'
+
 
 const TextFieldInput = { disableUnderline: true, sx: { fontSize: '12px', letterSpacing: '0.03333em', fontFamily: 'CorsaGrotesk' }}
 
-const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, editFunction }) => {
+const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, deleteFunc, errorDialog, setErrorDialog }) => {
   const menuAnchor = useRef(null)
   const textRef = useRef(null)
   const oldName = useRef(null)
@@ -21,23 +25,46 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
   const [editMode, setEditMode] = useState(false)
   const [name, setName] = useState(row.name || `Снимка ${row.position}`)
 
+  const history = useNavigate()
+
   useEffect(() => {
     if (editMode && textRef.current) textRef.current.focus()
   }, [editMode, textRef])
   
+
   const enterEditMode = () => {
     oldName.current = name
     setEditMode(true)
   }
+
 
   const cancelEdit = () => {
     setName(oldName.current)
     setEditMode(false)
   }
 
+  const authError = () => {
+    cleanCredentials()
+    history('/')
+  }
+
+
   const updateName = () => {
-    setEditMode(false)
-    editFunction(row._id, name)
+    if (!name.trim().length) {
+      setErrorDialog({ show: true, message: `Името не може да е празно поле!` })
+      return
+    }
+
+    changeNameRequest({ _id: row._id, name })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setEditMode(false)
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
   return (
@@ -64,12 +91,7 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
               </Box>
             : <Box display='flex' alignItems='center' justifyContent='space-between' mb={1} maxHeight={30}>
                 <Typography fontFamily='CorsaGrotesk' variant='caption'>
-                  {
-                    row.name
-                      ? row.name.length > imageSize.maxSymbols ? `${row.name.slice(0, imageSize.maxSymbols)} ...` : row.name
-                      : `Снимка ${row.position}`
-                  }
-                  
+                  {name.length > imageSize.maxSymbols ? `${name.slice(0, imageSize.maxSymbols)} ...` : name}
                 </Typography>
                 <IconButton sx={{mr: -0.5}} size='small' onClick={() => setOpenMenu(!openMenu)} ref={menuAnchor} >
                   <MoreVertIcon fontSize='small' />
@@ -90,11 +112,11 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
       >
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={enterEditMode} >
           <ListItemIcon sx={{minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>Промени име</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1} >
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1} >
           <ListItemIcon sx={{minWidth: '30px !important'}}><DriveFileMoveIcon fontSize='small' color='primary'/></ListItemIcon>Премести</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1}>
           <ListItemIcon sx={{minWidth: '30px !important'}}><ShareIcon fontSize='small' color='primary'/></ListItemIcon>Сподели</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => deleteFunc(row._id, name)}>
           <ListItemIcon sx={{minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
       </Menu>
     </Grid>

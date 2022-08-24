@@ -29,3 +29,20 @@ export const changePositionsRequest = async (body) => {
     body: JSON.stringify(body),
   })
 }
+
+
+export const changeNameRequest = async (body) => {
+  return fetch(`${API}/photo/name`, {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify(body),
+  })
+}
+
+
+export const deletePhotoRequest = async (_id) => {
+  return fetch(`${API}/photo/${_id}`, {
+    method: 'DELETE',
+    headers: headers()
+  })
+}

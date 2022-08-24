@@ -18,7 +18,7 @@ import AlbumRow from './AlbumRow'
 import PhotoComponent from './PhotoComponent'
 import AlbumDialog from './AlbumDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
-import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest } from '../../api/photo'
+import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest, deletePhotoRequest } from '../../api/photo'
 
 
 const imageSizeConst = {
@@ -266,9 +266,26 @@ const Media = () => {
   }
 
 
-  const changePhotoName = (_id, name) => {
-    const elka = images.map(x => x._id === _id ? { ...x, name } : x)
-    setImages(elka)
+  const prepareDeletePhoto = (_id, name) => {
+    const message = `Сигурни ли сте, че искате да изтриете снимка "${name}"?`
+    setConfirmDialog({ show: true, message, acceptFunc: () => deletePhoto(_id) })
+  }
+
+
+  const deletePhoto = (_id) => {
+    setConfirmDialog({ show: false, message: '' })
+    deletePhotoRequest(_id)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        imageQuery.hasNextPage
+          ? setReload({ ...reload, photos: !reload.photos })
+          : setImages(images.filter(x => x._id !== result.payload._id))
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
 
@@ -355,7 +372,9 @@ const Media = () => {
                             imageSize={imageSize}
                             changePositionFunc={changeImagePosition}
                             setStartPosition={setDragStart}
-                            editFunction={changePhotoName}
+                            errorDialog={errorDialog}
+                            setErrorDialog={setErrorDialog}
+                            deleteFunc={prepareDeletePhoto}
                           />))
                         : <Box width='100%' textAlign='center' justifyContent='center' padding={5}>{'Албумът е празен'}</Box>
                       : <Box width='100%' display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
