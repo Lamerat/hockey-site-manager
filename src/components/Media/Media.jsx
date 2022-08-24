@@ -22,9 +22,9 @@ import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest } from '
 
 
 const imageSizeConst = {
-  small: { gridSpacing: 3, height: '120px', icon: <PhotoSizeSelectSmallIcon color='secondary' />, pageSize: 25 },
-  middle: { gridSpacing: 4, height: '160px', icon: <PhotoSizeSelectLargeIcon color='secondary' />, pageSize: 15 },
-  large: { gridSpacing: 6, height: '260px', icon: <PhotoSizeSelectActualIcon color='secondary' />, pageSize: 8 },
+  small: { gridSpacing: 3, height: '120px', icon: <PhotoSizeSelectSmallIcon color='secondary' />, pageSize: 25, maxSymbols: 17, },
+  middle: { gridSpacing: 4, height: '160px', icon: <PhotoSizeSelectLargeIcon color='secondary' />, pageSize: 15, maxSymbols: 27, },
+  large: { gridSpacing: 6, height: '260px', icon: <PhotoSizeSelectActualIcon color='secondary' />, pageSize: 8, maxSymbols: 47, },
 }
 
 const Media = () => {
@@ -266,6 +266,12 @@ const Media = () => {
   }
 
 
+  const changePhotoName = (_id, name) => {
+    const elka = images.map(x => x._id === _id ? { ...x, name } : x)
+    setImages(elka)
+  }
+
+
   useEffect(() => {
     if(firstRenderSharedRef.current) {
       firstRenderSharedRef.current = false
@@ -342,7 +348,15 @@ const Media = () => {
                   {
                     images
                       ? images.length
-                        ? images.map(x => <PhotoComponent row={x} imageSize={imageSize} key={x._id} changePositionFunc={changeImagePosition} setStartPosition={setDragStart} />)
+                        ? images.map(x => (
+                          <PhotoComponent
+                            key={x._id}
+                            row={x}
+                            imageSize={imageSize}
+                            changePositionFunc={changeImagePosition}
+                            setStartPosition={setDragStart}
+                            editFunction={changePhotoName}
+                          />))
                         : <Box width='100%' textAlign='center' justifyContent='center' padding={5}>{'Албумът е празен'}</Box>
                       : <Box width='100%' display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
                   }
