@@ -46,3 +46,12 @@ export const deletePhotoRequest = async (_id) => {
     headers: headers()
   })
 }
+
+
+export const changePhotoAlbumRequest = async (body) => {
+  return fetch(`${API}/photo/move`, {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify(body),
+  })
+}

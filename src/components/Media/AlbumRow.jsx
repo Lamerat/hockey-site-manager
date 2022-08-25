@@ -10,12 +10,24 @@ import HomeIcon from '@mui/icons-material/Home';
 import { menuPaperStyleSmall } from './Media.styles'
 import mainTheme from '../../theme/MainTheme'
 
-const AlbumRow = ({ row, currentFolder, setCurrentFolder, setMainFunc, editFunc, deleteFunc, globalEdit }) => {
+const AlbumRow = ({ row, currentFolder, setCurrentFolder, setMainFunc, editFunc, deleteFunc, globalEdit, moveFunc, dragPhoto }) => {
   const anchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
   const [selected, setSelected] = useState(false)
 
   const opacity = globalEdit ? 0.2 : 1
+
+  const dragOverAction = (e) => {
+    if (row._id !== currentFolder.id) {
+      e.preventDefault()
+      setSelected(true)
+    }
+  }
+
+  const onDropAction = () => {
+    moveFunc(row._id, dragPhoto)
+    setSelected(false)
+  }
 
   return (
     <Box
@@ -25,6 +37,9 @@ const AlbumRow = ({ row, currentFolder, setCurrentFolder, setMainFunc, editFunc,
       sx={{cursor: globalEdit ? 'default' : 'pointer', ml: 0, pl: 2, mr: 0, pr: 2, backgroundColor: selected ? mainTheme.palette.secondary.superLight : 'white'}}
       onMouseEnter={ globalEdit ? null : () => setSelected(true)}
       onMouseLeave={ globalEdit ? null : () => setSelected(false)}
+      onDragOver={dragOverAction}
+      onDragLeave={() => setSelected(false)}
+      onDrop={onDropAction}
     >
       <Box display='flex' alignItems='center' width='100%' onClick={ globalEdit ? null : () => setCurrentFolder({ id: row._id, name: row.name })}>
         <Box display='flex' alignItems='center' position='relative'>

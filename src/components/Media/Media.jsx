@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import SharedContext from '../../context/SharedContext'
 import UserContext from '../../context/UserContext'
-import { Container, Paper, Box, Typography, IconButton, Tooltip, Grid, ListItemIcon, Menu, MenuItem } from '@mui/material'
+import { Container, Paper, Box, Typography, IconButton, Tooltip, Grid, ListItemIcon, Menu, MenuItem, Backdrop } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { getCredentials, cleanCredentials } from '../../config/storage'
 import mainTheme from '../../theme/MainTheme'
@@ -11,6 +11,7 @@ import PhotoSizeSelectLargeIcon from '@mui/icons-material/PhotoSizeSelectLarge'
 import PhotoSizeSelectSmallIcon from '@mui/icons-material/PhotoSizeSelectSmall'
 import { menuPaperStyle } from './Media.styles'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import { createAlbum, editAlbumRequest, listAlbums, setMainAlbum, deleteAlbumRequest } from '../../api/albums'
@@ -18,7 +19,7 @@ import AlbumRow from './AlbumRow'
 import PhotoComponent from './PhotoComponent'
 import AlbumDialog from './AlbumDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
-import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest, deletePhotoRequest } from '../../api/photo'
+import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest, deletePhotoRequest, changePhotoAlbumRequest } from '../../api/photo'
 
 
 const imageSizeConst = {
@@ -44,6 +45,7 @@ const Media = () => {
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
   const [dragStart, setDragStart] = useState(null)
   const [globalEdit, setGlobalEdit] = useState(false)
+  const [showBackDrop, setShowBackDrop] = useState(false)
   
   const firstRenderSharedRef = useRef(true)
   const firstRenderRef = useRef(true)
@@ -143,7 +145,7 @@ const Media = () => {
         if (!result.success) throw new Error(result.message)
         imageQuery.hasNextPage
           ? setReload({ ...reload, photos: !reload.photos })
-          : setImages([ ...result.payload, ...images.map(x => ({ ...x, position: x.position + 1 })) ])
+          : setImages([ ...result.payload, ...images.map(x => ({ ...x, position: x.position + result.payload.length })) ])
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -292,6 +294,28 @@ const Media = () => {
   }
 
 
+  const changePhotoFolder = (album, photoPosition) => {
+    const photo = images.filter(x => x.position === photoPosition)[0]
+    setShowBackDrop(true)
+    changePhotoAlbumRequest({ album, photo })
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        imageQuery.hasNextPage
+          ? setReload({ ...reload, photos: !reload.photos })
+          : setImages(images.filter(x => x._id !== result.payload._id))
+        setShowBackDrop(false)
+      })
+      .catch(error => {
+        setShowBackDrop(false)
+        setErrorDialog({ show: true, message: error.message })
+      })
+  }
+
+
   useEffect(() => {
     if(firstRenderSharedRef.current) {
       firstRenderSharedRef.current = false
@@ -309,6 +333,7 @@ const Media = () => {
           <Paper elevation={2} sx={{pb: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
             <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} m={2} borderColor={`rgb(38, 166, 154, ${opacity})`} mb={1}>
               <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' sx={{opacity}} pb={0.5}>Албуми</Typography>
+              { showBackDrop ? <LinearProgress sx={{width: '100%' , mr: 4, ml: 4}}  variant='query'/> : null }
               <Box display='flex' alignItems='center' mr={-1}>
                 <Tooltip title='Добави нов' arrow>
                   <IconButton disabled={globalEdit} onClick={() => setShowAlbumDialog({ show: true, editMode: false, data: null, actionFunc: addNewAlbum })}>
@@ -336,6 +361,8 @@ const Media = () => {
                         editFunc={prepareEditAlbum}
                         setMainFunc={setMain}
                         globalEdit={globalEdit}
+                        moveFunc={changePhotoFolder}
+                        dragPhoto={dragStart}
                       />))
                     : 'Нямате нито един албум'
                   : <Box display='flex' alignItems='center' justifyContent='center' padding={5}><CircularProgress size={80} /></Box>
@@ -410,6 +437,7 @@ const Media = () => {
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { showAlbumDialog.show ? <AlbumDialog editMode={showAlbumDialog.editMode} data={showAlbumDialog.data} actionFunc={showAlbumDialog.actionFunc} closeFunc={setShowAlbumDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
+      <Backdrop sx={{ mt: '64px', backgroundColor: `rgb(255, 255, 255, 0)`, zIndex: (theme) => theme.zIndex.drawer + 1 }} open={showBackDrop} />
     </Container>
   )
 }

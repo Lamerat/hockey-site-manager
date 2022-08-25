@@ -5,7 +5,6 @@ import mainTheme from '../../theme/MainTheme'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { menuPaperStyleSmall } from './Media.styles'
 import DeleteIcon from '@mui/icons-material/Delete'
-import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove'
 import ShareIcon from '@mui/icons-material/Share'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
@@ -116,13 +115,17 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={enterEditMode} >
-          <ListItemIcon sx={{minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>Промени име</MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1} >
-          <ListItemIcon sx={{minWidth: '30px !important'}}><DriveFileMoveIcon fontSize='small' color='primary'/></ListItemIcon>Премести</MenuItem>
+          <ListItemIcon sx={{minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>
+          Промени име
+        </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1}>
-          <ListItemIcon sx={{minWidth: '30px !important'}}><ShareIcon fontSize='small' color='primary'/></ListItemIcon>Сподели</MenuItem>
+          <ListItemIcon sx={{minWidth: '30px !important'}}><ShareIcon fontSize='small' color='primary'/></ListItemIcon>
+          Сподели
+        </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => deleteFunc(row._id, name)}>
-          <ListItemIcon sx={{minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
+          <ListItemIcon sx={{minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>
+          Изтрий
+        </MenuItem>
       </Menu>
     </Grid>
   )
