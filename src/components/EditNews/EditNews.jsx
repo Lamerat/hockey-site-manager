@@ -55,7 +55,6 @@ const EditNews = () => {
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 
-  const removePhoto = (id) => setPhotos(photos.filter(x => x._id !== id))
 
   const updateNews = () => {
     const messages = []
@@ -155,6 +154,18 @@ const EditNews = () => {
   }
 
 
+  const deleteMainImage = () => {
+    hidePreviewImage()
+    setMainPhoto(null)
+  }
+
+
+  const removePhoto = (id) => {
+    hidePreviewImage()
+    setPhotos(photos.filter(x => x._id !== id))
+  }
+
+
   if (!user || !getCredentials()) return null
 
   return (
@@ -205,7 +216,7 @@ const EditNews = () => {
                                 label={mainPhoto.originalName}
                                 variant='outlined'
                                 color='secondary'
-                                onDelete={() => setMainPhoto(null)}
+                                onDelete={deleteMainImage}
                                 onMouseEnter={(event) => showPreviewImage(event, mainPhoto.url)}
                                 onMouseLeave={hidePreviewImage}
                               />

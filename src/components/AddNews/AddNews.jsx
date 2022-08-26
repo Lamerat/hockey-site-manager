@@ -28,7 +28,7 @@ const AddNews = () => {
   const [anchorPreview, setAnchorPreview] = useState(null)
 
   const history = useNavigate()
-  
+
 
   const fileUploadAction = (file, field) => {
     if (!file || !file.length) return
@@ -44,10 +44,6 @@ const AddNews = () => {
       .then(x => x.json())
       .then(result => field === 'main' ? setMainPhoto(result.payload[0]) : setPhotos([...result.payload, ...photos]))
       .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }
-
-  const removePhoto = (id) => {
-    setPhotos(photos.filter(x => x._id !== id))
   }
 
 
@@ -106,10 +102,19 @@ const AddNews = () => {
   }
 
 
+  const deleteMainImage = () => {
+    hidePreviewImage()
+    setMainPhoto(null)
+  }
+
+
+  const removePhoto = (id) => {
+    hidePreviewImage()
+    setPhotos(photos.filter(x => x._id !== id))
+  }
+
   return (
     <Container sx={{maxWidth: '1366px !important', marginTop: 3, pl: 3, pr: 3}} disableGutters={true}>
-
-      
       <Paper elevation={2} sx={{p: 2, maxHeight: 'calc(100vh - 140px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
         <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
           <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Добавяне на новина</Typography>
@@ -153,7 +158,7 @@ const AddNews = () => {
                           label={mainPhoto.originalName}
                           variant='outlined'
                           color='secondary'
-                          onDelete={() => setMainPhoto(null)}
+                          onDelete={deleteMainImage}
                           onMouseEnter={(event) => showPreviewImage(event, mainPhoto.url)}
                           onMouseLeave={hidePreviewImage}
                         />
