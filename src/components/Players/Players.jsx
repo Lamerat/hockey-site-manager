@@ -10,6 +10,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { menuPaperStyle } from './Players.styles'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import PlayerDialog from './PlayerDialog'
 
 const Players = () => {
   const { setShared } = useContext(SharedContext)
@@ -113,6 +114,7 @@ const Players = () => {
             Изтрий
         </MenuItem>
       </Menu>
+      <PlayerDialog editMode={false} />
     </Container>
   )
 }
