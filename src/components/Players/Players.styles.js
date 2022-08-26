@@ -25,3 +25,10 @@ export const menuPaperStyle = {
     },
   },
 }
+
+export const badgeProps = {
+  '& .MuiBadge-badge': {
+    color: 'lightgreen',
+    backgroundColor: '#ffc107'
+  }
+}

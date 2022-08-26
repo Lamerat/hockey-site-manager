@@ -23,9 +23,9 @@ import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest, deleteP
 
 
 const imageSizeConst = {
-  small: { gridSpacing: 3, height: '120px', icon: <PhotoSizeSelectSmallIcon color='secondary' />, pageSize: 25, maxSymbols: 17, },
-  middle: { gridSpacing: 4, height: '160px', icon: <PhotoSizeSelectLargeIcon color='secondary' />, pageSize: 15, maxSymbols: 27, },
-  large: { gridSpacing: 6, height: '260px', icon: <PhotoSizeSelectActualIcon color='secondary' />, pageSize: 8, maxSymbols: 47, },
+  small: { gridSpacing: 3, height: '140px', icon: <PhotoSizeSelectSmallIcon color='secondary' />, pageSize: 25, maxSymbols: 17, },
+  middle: { gridSpacing: 4, height: '180px', icon: <PhotoSizeSelectLargeIcon color='secondary' />, pageSize: 15, maxSymbols: 27, },
+  large: { gridSpacing: 6, height: '280px', icon: <PhotoSizeSelectActualIcon color='secondary' />, pageSize: 8, maxSymbols: 47, },
 }
 
 const Media = () => {
@@ -371,7 +371,7 @@ const Media = () => {
               </Scrollbars>
           </Paper>
         </Grid>
-        <Grid item xs={8}>
+        <Grid item xs={9}>
           <Paper elevation={2} sx={{p: 2, pb: 1, maxHeight: 'calc(100vh - 130px - 8px)', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}>
             <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={`rgb(38, 166, 154, ${opacity})`} mb={1}>
               <Typography fontFamily='CorsaGrotesk' sx={{opacity}} color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>{currentFolder?.name}</Typography>
