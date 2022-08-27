@@ -9,3 +9,14 @@ export const newsSearchFieldsTranslation = {
   text: 'Текст',
   author: 'Автор'
 }
+
+export const positionTranslation = {
+  goalie: 'Вратар',
+  guard: 'Защитник',
+  attacker: 'Нападател'
+}
+
+export const handTranslation = {
+  left: 'Ляв',
+  right: 'Десен'
+}

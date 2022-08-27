@@ -1,9 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import SharedContext from '../../context/SharedContext'
 import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack, Badge } from '@mui/material'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import { badgeProps } from './Players.styles'
+import { useNavigate } from 'react-router-dom'
+import { getCredentials, cleanCredentials } from '../../config/storage'
+import { listPlayerRequest } from '../../api/player'
 import { sortBox, sortLabel, rotateAngle } from '../../common/sortStyles'
+import SharedContext from '../../context/SharedContext'
+import UserContext from '../../context/UserContext'
 import mainTheme from '../../theme/MainTheme'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -12,31 +16,88 @@ import PlayerDialog from './PlayerDialog'
 import LinearProgress from '@mui/material/LinearProgress'
 import PlayerRow from './PlayerRow'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
+import ErrorDialog from '../ErrorDialog/ErrorDialog'
+import PlayerFilterMenu from './PlayerFilterMenu'
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 
 
-
-const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false,  hasNextPage: false, sort: { number: -1 }, search: '', searchFields: [], startDate: null, endDate: null }
+const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false, hidden: true,  hasNextPage: false, sort: { number: 1 }, search: '' }
 
 const Players = () => {
   const { setShared } = useContext(SharedContext)
+  const { user } = useContext(UserContext)
+
   const firstRenderRef = useRef(true)
+  const firstRenderSharedRef = useRef(true)
   const filterMenuRef = useRef(null)
 
 
   const [query, setQuery] = useState(queryDefault)
+  const [players, setPlayers] = useState(null)
+  const [reloadList, setReloadList] = useState(false)
   const [filterBadge, setFilterBadge] = useState(true)
-  const [players, setPlayers] = useState([{ _id: 1, hidden: false }])
-  const [showPlayerDialog, setShowPlayerDialog] = useState(false)
+  const [openFilterMenu, setOpenFilterMenu] = useState(false)
+  const [showPlayerDialog, setShowPlayerDialog] = useState({ show: false, data: null })
+  const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
 
-  
+
+  const history = useNavigate()
+
+
+  useEffect(() => {
+    if(firstRenderRef.current) {
+      firstRenderRef.current = false
+      return
+    }
+
+    const authError = () => {
+      cleanCredentials()
+      history('/')
+    }
+
+    const body = {
+      pageNumber: query.pageNumber,
+      pageSize: 20,
+      sort: query.sort,
+      search: query.search,
+      searchFields: query.searchFields,
+      startDate: query.startDate,
+      endDate: query.endDate,
+      hand: query.hand,
+      position: query.position,
+      minNumber: query.minNumber,
+      maxNumber: query.maxNumber,
+      hidden: query.hidden,
+    }
+
+    listPlayerRequest(body)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setPlayers(players => query.pageNumber === 1 ? result.payload.docs : [ ...players, ...result.payload.docs])
+        setQuery(query => ({ ...query, pageNumber: result.payload.page, hasNextPage: result.payload.hasNextPage }))
+        // Check for filter
+        const positionFilter = () => body.position?.length > 0 && body.position?.length < 3 ? true : false
+        setFilterBadge(body.startDate || body.search || query.hand || positionFilter() || body.minNumber || body.maxNumber ? false : true)
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }, [query.pageNumber, query.search, query.sort, query.endDate, query.startDate,
+    query.position, query.minNumber, query.maxNumber, query.hand, query.searchFields, query.hidden, history, reloadList])
 
 
   const handlePagination = (scrollTop, height, scrollHeight) => {
     if (scrollTop + height < scrollHeight - 20) return
-    // if (query.hasNextPage) {
-    //   setQuery({ ...query, pageNumber: query.pageNumber + 1, hasNextPage: false })
-    // }
+    if (query.hasNextPage) {
+      setQuery({ ...query, pageNumber: query.pageNumber + 1, hasNextPage: false })
+    }
   }
+
+
+  const addFilter = (filters) => setQuery({ ...query, ...filters, pageNumber: 1, hasNextPage: false })
 
 
   const renderSort = (field) => {
@@ -58,13 +119,14 @@ const Players = () => {
   }
   
   useEffect(() => {
-    if(firstRenderRef.current) {
-      firstRenderRef.current = false
+    if(firstRenderSharedRef.current) {
+      firstRenderSharedRef.current = false
       return
     }
     setShared(shared => ({ ...shared, currentPage: 2 }))
   }, [setShared])
 
+  if (!user || !getCredentials()) return null
   
   return (
     <Container sx={{maxWidth: '1366px !important', marginTop: 3, pl: 3, pr: 3}} disableGutters={true}>
@@ -72,22 +134,27 @@ const Players = () => {
         <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={mainTheme.palette.secondary.main} mb={1}>
           <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Играчи</Typography>
           <Box display='flex' alignItems='center' mr={-1}>
-          <Tooltip title='Филтри' arrow>
-              <IconButton onClick={() => 1} ref={filterMenuRef}>
+            <Tooltip title={ query.hidden ? 'Не показвай скритите' : 'Покажи всички' } arrow>
+              <IconButton onClick={() => setQuery({ ...query, hidden: !query.hidden, pageNumber: 1, hasNextPage: false })}>
+                { query.hidden ? <PeopleAltIcon color='secondary' /> : <PeopleAltOutlinedIcon color='secondary' /> }
+              </IconButton>
+            </Tooltip>
+            <Tooltip title='Филтри' arrow>
+              <IconButton onClick={() => setOpenFilterMenu(!openFilterMenu)} ref={filterMenuRef}>
                 <Badge sx={badgeProps} color='primary' variant='dot' invisible={filterBadge}>
                   <FilterAltIcon color='secondary' />
                 </Badge>
               </IconButton>
             </Tooltip>
             <Tooltip title='Добави нов' arrow>
-              <IconButton onClick={() => setShowPlayerDialog(true)}>
+              <IconButton onClick={() => setShowPlayerDialog({ show: true, data: null })}>
                 <LibraryAddIcon color='secondary' />
               </IconButton>
             </Tooltip>
           </Box>
         </Box>
         <Stack direction='row' pt={1} pb={1} pl={2.5} pr={1.5} minHeight={26}>
-          <Box width='42%' sx={sortBox} onClick={()=> renderSort('playerName')}><Box sx={sortLabel}>Име</Box>{sortArrow('playerName')}</Box>
+          <Box width='42%' sx={sortBox} onClick={()=> renderSort('fullName')}><Box sx={sortLabel}>Име</Box>{sortArrow('fullName')}</Box>
           <Box width='9%' sx={sortBox} onClick={()=> renderSort('number')}><Box sx={sortLabel}>Номер</Box>{sortArrow('number')}</Box>
           <Box width='10%' sx={sortBox} onClick={()=> renderSort('position')}><Box sx={sortLabel}>Пост</Box>{sortArrow('position')}</Box>
           <Box width='9%' sx={sortBox} onClick={()=> renderSort('hand')}><Box sx={sortLabel}>Хват</Box>{sortArrow('hand')}</Box>
@@ -117,7 +184,9 @@ const Players = () => {
             : <LinearProgress color='secondary' sx={{height: 20, borderRadius: '4px', m: 2 }}/>
         }
       </Paper>
-      { showPlayerDialog ? <PlayerDialog editMode={false} /> : null }
+      <PlayerFilterMenu searchMenuRef={filterMenuRef} openMenu={openFilterMenu} setOpenMenu={setOpenFilterMenu} addFilterFunc={addFilter} />
+      { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
+      { showPlayerDialog.show ? <PlayerDialog data={showPlayerDialog.data} editMode={false} closeFunc={setShowPlayerDialog} /> : null }
       
     </Container>
   )
