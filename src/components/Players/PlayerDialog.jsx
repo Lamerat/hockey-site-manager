@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog'
 import mainTheme from '../../theme/MainTheme'
 import Slide from '@mui/material/Slide'
 import TextField from '@mui/material/TextField'
-import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Tooltip, IconButton, InputAdornment } from '@mui/material'
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Tooltip, IconButton, InputAdornment, CardMedia } from '@mui/material'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import CircularProgress from '@mui/material/CircularProgress'
 import { uploadFiles } from '../../api/files'
@@ -15,8 +15,19 @@ import EditIcon from '@mui/icons-material/Edit'
 import 'react-datepicker/dist/react-datepicker.css'
 
 
-const titleStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }
+const titleStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }
 const secondColor = mainTheme.palette.secondary.main
+const playerDefault = { 
+  firstName: { value: '', error: false},
+  lastName: { value: '', error: false},
+  number: { value: 1, error: false},
+  position: { value: 'goalie', error: false},
+  hand: { value: 'right', error: false},
+  birthDate: { value: new Date('1980-01-01'), error: false },
+  height: { value: 176, error: false},
+  weight: { value: 75, error: false},
+  description: { value: '', error: false},
+}
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
@@ -24,6 +35,8 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const PlayerDialog = ({data, editMode, actionFunc, closeFunc}) => {
   const firstRenderRef = useRef(true)
+
+  const [player, setPlayer] = useState(data ? data : playerDefault)
 
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
 
@@ -41,33 +54,50 @@ const PlayerDialog = ({data, editMode, actionFunc, closeFunc}) => {
           </Tooltip>
         </Box>
       </Box>
-      <Grid container spacing={3}>
-        <Grid item xs={5}>
-          <Box width='100%' minHeight={356} border='1px solid black'></Box>
+      <Grid container spacing={2.5}>
+        <Grid item xs={5.2}>
+          <CardMedia component='img' sx={{maxHeight: 372, borderRadius: '4px'}} image='https://iili.io/4zmQHX.jpg' />
         </Grid>
-        <Grid item xs={7}>
-          <Grid container spacing={2}>
+        <Grid item xs={6.8}>
+          <Grid container spacing={2.5} p={0}>
             <Grid item xs={6}>
-              <TextField label='Име' variant='outlined' size='small' fullWidth />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField label='Фамилия' variant='outlined' size='small' fullWidth />
+              <TextField
+                label='Име'
+                variant='outlined'
+                size='small'
+                fullWidth
+                required
+                value={player.firstName.value}
+              />
             </Grid>
             <Grid item xs={6}>
               <TextField
+                label='Фамилия'
+                variant='outlined'
+                size='small'
+                fullWidth
+                required
+                value={player.lastName.value}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                autoComplete='off'
                 label='Номер'
                 type='number'
                 size='small'
                 fullWidth
-                InputLabelProps={{ shrink: false }}
+                required
+                value={player.number.value}
               />
             </Grid>
             <Grid item xs={6}>
               <FormControl fullWidth size='small'>
-                <InputLabel>Пост</InputLabel>
+                <InputLabel required>Пост</InputLabel>
                 <Select
                   label='Пост'
-                  value={'goalie'}
+                  required
+                  value={player.position.value}
                   // onChange={handleChange}
                 >
                   <MenuItem value={'goalie'}>Вратар</MenuItem>
@@ -78,7 +108,7 @@ const PlayerDialog = ({data, editMode, actionFunc, closeFunc}) => {
             </Grid>
             <Grid item xs={6}>
               <DatePicker
-                // selected={filters.startDate}
+                selected={player.birthDate.value}
                 // onChange={(date) => changeStartDate(date)}
                 popperPlacement='auto-end'
                 maxDate={new Date()}
@@ -87,19 +117,22 @@ const PlayerDialog = ({data, editMode, actionFunc, closeFunc}) => {
                   <TextField
                     size='small'
                     fullWidth
+                    required
                     label='Рождена дата'
                     variant='outlined'
-                    InputProps={{ endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2}} color='primary' /></InputAdornment>) }}
+                    InputLabelProps={{ required: true }}
+                    InputProps={{ required: true, autoComplete: 'off', endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2}} color='primary' /></InputAdornment>) }}
                   />
                 }
               />
             </Grid>
             <Grid item xs={6}>
               <FormControl fullWidth size='small'>
-                <InputLabel>Водеща ръка</InputLabel>
+                <InputLabel required>Водеща ръка</InputLabel>
                 <Select
                   label='Водеща ръка'
-                  value={'right'}
+                  required
+                  value={player.hand.value}
                   // onChange={handleChange}
                 >
                   <MenuItem value={'left'}>Лява</MenuItem>
@@ -112,35 +145,43 @@ const PlayerDialog = ({data, editMode, actionFunc, closeFunc}) => {
                 label='Ръст'
                 variant='outlined'
                 size='small'
+                autoComplete='off'
                 fullWidth
+                required
                 InputProps={{ endAdornment: <InputAdornment position='end'>см</InputAdornment> }}
+                value={player.height.value}
               />
             </Grid>
             <Grid item xs={6}>
               <TextField
                 label='Тегло'
+                autoComplete='off'
                 variant='outlined'
                 size='small'
                 fullWidth
+                required
                 InputProps={{ endAdornment: <InputAdornment position='end'>кг</InputAdornment> }}
+                value={player.weight.value}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label='Тегло'
+                label='Кратко описание'
                 variant='outlined'
                 size='small'
                 fullWidth
                 multiline
                 rows={5}
+                error={player.description.error}
+                value={player.description.value}
               />
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-      <Box sx={{...titleStyle, mb: 0, mt: 2}}>
+      <Box sx={{...titleStyle, mb: 0, mt: 2.5}}>
         <Button variant='contained' component='label'>
-          Избери лого
+          Избери снимка
           <input hidden accept='image/*' type='file' onChange={(e) => 1} />
         </Button>
         <Box ml={6}>
