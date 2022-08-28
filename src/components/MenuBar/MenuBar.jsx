@@ -69,16 +69,16 @@ const MenuBar = () => {
         />        
         <Divider />
         <MenuItem sx={{fontFamily: 'CorsaGrotesk'}}>
-        <ListItemIcon>
-          <PersonIcon fontSize='small' />
-        </ListItemIcon>
-          Моят профил
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
+            <PersonIcon fontSize='small' />
+          </ListItemIcon>
+            Моят профил
         </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk'}} onClick={logOutFromServer}>
-          <ListItemIcon>
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
             <LogoutIcon fontSize='small'/>
           </ListItemIcon>
-            Изход
+          Изход
         </MenuItem>
       </Menu>
     </AppBar>

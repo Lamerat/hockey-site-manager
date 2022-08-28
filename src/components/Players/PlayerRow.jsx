@@ -9,14 +9,14 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { handTranslation, positionTranslation } from '../../config/constants'
 import { formatDate } from '../../common/help-functions'
 
-const PlayerRow = ({row}) => {
+const PlayerRow = ({ row, profileFunc, deleteFunc, hideFunc }) => {
   const menuAnchor = useRef(null)
   const [openMenu, setOpenMenu] = useState(false)
 
   return (
     <Paper elevation={1} sx={{p: 1.5, mt: 1, borderLeft: '8px solid', borderColor: row.hidden ? 'red' : mainTheme.palette.secondary.main}}>
       <Stack direction='row' alignItems='center' minHeight={28}>
-        <Box width='42%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.fullName}</Box>
+        <Box width='42%' fontFamily='CorsaGrotesk' fontSize='14px' sx={{ cursor: 'pointer' }} onClick={() => profileFunc(row._id)}>{row.fullName}</Box>
         <Box width='9%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.number}</Box>
         <Box width='10%' fontFamily='CorsaGrotesk' fontSize='14px'>{positionTranslation[row.position]}</Box>
         <Box width='9%' fontFamily='CorsaGrotesk' fontSize='14px'>{handTranslation[row.hand]}</Box>
@@ -37,13 +37,13 @@ const PlayerRow = ({row}) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={() => 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={() => hideFunc(row._id, row.hidden ? 'show': 'hide')}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
             { row.hidden ? <VisibilityIcon fontSize='small' color='primary' /> : <VisibilityOffIcon fontSize='small' color='primary' /> }
           </ListItemIcon>
           { row.hidden ? 'Покажи' : 'Скрий' }
         </MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => deleteFunc(row._id, row.fullName)}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
             <DeleteIcon fontSize='small' color='error'/>
           </ListItemIcon>

@@ -428,11 +428,11 @@ const Media = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={() => changeImageSize('large')}>
-          <ListItemIcon><PhotoSizeSelectActualIcon fontSize='small' color='primary' /></ListItemIcon>Големи</MenuItem>
+        <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><PhotoSizeSelectActualIcon fontSize='small' color='primary' /></ListItemIcon>Големи</MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> changeImageSize('middle')} >
-          <ListItemIcon><PhotoSizeSelectLargeIcon fontSize='small' color='primary'/></ListItemIcon>Средни</MenuItem>
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><PhotoSizeSelectLargeIcon fontSize='small' color='primary'/></ListItemIcon>Средни</MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={()=> changeImageSize('small')}>
-          <ListItemIcon><PhotoSizeSelectSmallIcon fontSize='small' color='primary'/></ListItemIcon>Малки</MenuItem>
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><PhotoSizeSelectSmallIcon fontSize='small' color='primary'/></ListItemIcon>Малки</MenuItem>
       </Menu>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { showAlbumDialog.show ? <AlbumDialog editMode={showAlbumDialog.editMode} data={showAlbumDialog.data} actionFunc={showAlbumDialog.actionFunc} closeFunc={setShowAlbumDialog} /> : null }

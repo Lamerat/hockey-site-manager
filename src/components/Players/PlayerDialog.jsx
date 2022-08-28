@@ -1,5 +1,5 @@
 import React, { useState, forwardRef, useRef } from 'react'
-import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Tooltip, IconButton, InputAdornment, CardMedia, Menu, ListItemIcon } from '@mui/material'
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Grid, IconButton, InputAdornment, CardMedia, Menu, ListItemIcon, Tooltip } from '@mui/material'
 import { menuPaperStyle } from './Players.styles'
 import { uploadFiles } from '../../api/files'
 import Button from '@mui/material/Button'
@@ -14,6 +14,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import MenuIcon from '@mui/icons-material/Menu'
 import CircularProgress from '@mui/material/CircularProgress'
+import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
+import EditOffIcon from '@mui/icons-material/EditOff'
 import 'react-datepicker/dist/react-datepicker.css'
 
 
@@ -38,17 +40,19 @@ const Transition = forwardRef(function Transition(props, ref) {
 })
 
 
-const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
+const PlayerDialog = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
   const menuAnchor = useRef(null)
 
   const [player, setPlayer] = useState(data ? data : playerDefault)
   const [openMenu, setOpenMenu] = useState(false)
+  const [editMode, setEditMode] = useState(false)
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
+
 
   const changeData = (field, value) => {
     if (field === 'number' && (Number(value) < 1 || Number(value) > 99) ) {
       setErrorDialog({show: true, message: 'Стойността трябва да бъде в интервала 1 - 99'})
-      setPlayer({ ...player, [field]: { ...player[field], error: true } })
       return
     }
 
@@ -60,11 +64,69 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
       return
     }
 
-    setPlayer({ ...player, [field]: { value: typeof value === 'string' ? value.trim() : value, error: false } })
+    setPlayer({ ...player, [field]: { value: typeof value === 'string' && field !== 'description' ? value.trim() : value, error: false } })
   }
 
+
+  const validateFields = () => {
+    const errorMessages = []
+    const tempPlayer = { ...player }
+
+    if (!player.firstName.value.trim()) {
+      tempPlayer.firstName = { value: player.firstName.value, error: true }
+      errorMessages.push('името на играча')
+    }
+
+    if (!player.lastName.value.trim()) {
+      tempPlayer.lastName = { value: player.lastName.value, error: true }
+      errorMessages.push('фамилията на играча')
+    }
+
+    if (!player.height.value) {
+      tempPlayer.height = { value: player.height.value, error: true }
+      errorMessages.push('ръстът на играча')
+    }
+
+    if (!player.weight.value) {
+      tempPlayer.weight = { value: player.weight.value, error: true }
+      errorMessages.push('теглото на играча')
+    }
+
+    if (errorMessages.length) {
+      setPlayer(tempPlayer)
+      setErrorDialog({ show: true, message: `Не са попълнени следните полета: ${errorMessages.join(', ')}` })
+      return
+    }
+    
+    const body = {}
+    Object.keys(player).forEach(x => body[x] = player[x].value)
+
+    if (!editMode) {
+      addFunction(body)
+    } else {
+      editFunction(body)
+    }
+  }
+
+
   const closeDialog = () => {
-    closeFunc({ show: false, data: null })
+    let haveChanges = false
+
+    if (!data) {
+      Object.keys(player).forEach(x => player[x].value.toString() !== playerDefault[x].value.toString() ? haveChanges = true : null)
+    } else if (editMode) {
+      Object.keys(player).forEach(x => player[x].value.toString() !== data[x].value.toString() ? haveChanges = true : null)
+    }
+
+    if (haveChanges) {
+      setConfirmDialog({
+        show: true,
+        message: `Сигурни ли сте, че искате да прекратите процеса?<br/>Всички данни ще бъдат загубени!`,
+        acceptFunc: () => closeFunc({ show: false, data: null })
+      })
+    } else {
+      closeFunc({ show: false, data: null })
+    }
   }
 
 
@@ -87,14 +149,40 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
   }
 
 
+  const cancelEdit = () => {
+    let haveChanges = false
+    Object.keys(player).forEach(x => player[x].value.toString() !== data[x].value.toString() ? haveChanges = true : null)
+
+
+    if (haveChanges) {
+      setConfirmDialog({
+        show: true,
+        message: `Сигурни ли сте, че искате да прекратите процеса?<br/>Всички данни ще бъдат загубени!`,
+        acceptFunc: () => {
+          setConfirmDialog({ show: false, message: '' })
+          setPlayer(data)
+          setEditMode(false)
+        }
+      })
+    } else {
+      setPlayer(data)
+      setEditMode(false)
+    }
+  }
+
+
   return (
     <Dialog open={true} TransitionComponent={Transition} keepMounted maxWidth='md' fullWidth PaperProps={{sx: { p: 2}}}>
       <Box sx={titleStyle} borderBottom={1} borderColor={mainTheme.palette.secondary.main}>
-        <Typography fontFamily='CorsaGrotesk' color={secondColor} variant='h6' pb={0.5}>{ editMode ? 'Профил на играч' : 'Добавяне на нов играч' }</Typography>
+        <Typography fontFamily='CorsaGrotesk' color={secondColor} variant='h6' pb={0.5}>{ data ? editMode ? 'Редакция на профил' : 'Профил на играч' : 'Добавяне на нов играч' }</Typography>
         <Box display='flex' alignItems='center' mr={-1}>
-          {data ? <IconButton ref={menuAnchor} onClick={() => setOpenMenu(!openMenu)}><MenuIcon color='secondary' /></IconButton> : null }
-            
-          
+          {
+            data && !editMode
+              ? <IconButton ref={menuAnchor} onClick={() => setOpenMenu(!openMenu)}><MenuIcon color='secondary' /></IconButton>
+              : <Tooltip title='Откажи редактирането' arrow>
+                  <IconButton onClick={cancelEdit}><EditOffIcon color='secondary' /></IconButton>
+                </Tooltip>
+          }
         </Box>
       </Box>
       <Grid container spacing={2.5}>
@@ -111,10 +199,12 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
             <Grid item xs={6}>
               <TextField
                 label='Име'
+                disabled={data && !editMode}
                 variant='outlined'
                 size='small'
                 fullWidth
                 required
+                error={player.firstName.error}
                 value={player.firstName.value}
                 onChange={(e) => changeData('firstName', e.target.value)}
               />
@@ -122,10 +212,12 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
             <Grid item xs={6}>
               <TextField
                 label='Фамилия'
+                disabled={data && !editMode}
                 variant='outlined'
                 size='small'
                 fullWidth
                 required
+                error={player.lastName.error}
                 value={player.lastName.value}
                 onChange={(e) => changeData('lastName', e.target.value)}
               />
@@ -134,6 +226,7 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
               <TextField
                 autoComplete='off'
                 label='Номер'
+                disabled={data && !editMode}
                 type='number'
                 size='small'
                 fullWidth
@@ -148,6 +241,7 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
                 <InputLabel required>Пост</InputLabel>
                 <Select
                   label='Пост'
+                  disabled={data && !editMode}
                   required
                   value={player.position.value}
                   onChange={(e) => changeData('position', e.target.value)}
@@ -162,18 +256,24 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
               <DatePicker
                 selected={player.birthDate.value}
                 onChange={(date) => changeData('birthDate', date)}
+                disabled={data && !editMode}
                 popperPlacement='auto-end'
                 maxDate={new Date()}
                 dateFormat='dd-MM-yyyy'
                 customInput={
                   <TextField
                     size='small'
+                    disabled={data && !editMode}
                     fullWidth
                     required
                     label='Рождена дата'
                     variant='outlined'
                     InputLabelProps={{ required: true }}
-                    InputProps={{ required: true, autoComplete: 'off', endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2}} color='primary' /></InputAdornment>) }}
+                    InputProps={{
+                      required: true,
+                      autoComplete: 'off',
+                      endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2, opacity: data && !editMode ? 0.2 : 1 }} color='primary' /></InputAdornment>)
+                    }}
                   />
                 }
               />
@@ -183,6 +283,7 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
                 <InputLabel required>Водеща ръка</InputLabel>
                 <Select
                   label='Водеща ръка'
+                  disabled={data && !editMode}
                   required
                   value={player.hand.value}
                   onChange={(e) => changeData('hand', e.target.value)}
@@ -195,12 +296,14 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
             <Grid item xs={6}>
               <TextField
                 label='Ръст'
+                disabled={data && !editMode}
                 variant='outlined'
                 size='small'
                 autoComplete='off'
                 fullWidth
                 required
                 InputProps={{ endAdornment: <InputAdornment position='end'>см</InputAdornment> }}
+                error={player.height.error}
                 value={player.height.value}
                 onChange={(e) => changeData('height', e.target.value)}
               />
@@ -208,12 +311,14 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
             <Grid item xs={6}>
               <TextField
                 label='Тегло'
+                disabled={data && !editMode}
                 autoComplete='off'
                 variant='outlined'
                 size='small'
                 fullWidth
                 required
                 InputProps={{ endAdornment: <InputAdornment position='end'>кг</InputAdornment> }}
+                error={player.weight.error}
                 value={player.weight.value}
                 onChange={(e) => changeData('weight', e.target.value)}
               />
@@ -221,6 +326,7 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
             <Grid item xs={12}>
               <TextField
                 label='Кратко описание'
+                disabled={data && !editMode}
                 variant='outlined'
                 size='small'
                 fullWidth
@@ -234,14 +340,18 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
           </Grid>
         </Grid>
       </Grid>
-      <Box sx={{...titleStyle, mb: 0, mt: 2.5}}>
-        <Button variant='contained' component='label'>
-          Избери снимка
-          <input hidden accept='image/*' type='file' onClick={(e) => e.target.value = ''} onChange={(e) => fileUploadAction(e.target.files)} />
-        </Button>
+      <Box sx={{...titleStyle, mb: 0, mt: 2.5, justifyContent: data && !editMode ? 'right' : 'space-between'}}>
+        {
+          data && !editMode
+            ? null
+            : <Button variant='contained' component='label'>
+                Избери снимка
+                <input hidden accept='image/*' type='file' onClick={(e) => e.target.value = ''} onChange={(e) => fileUploadAction(e.target.files)} />
+              </Button>
+        }
         <Box ml={6}>
           <Button variant='contained' color='secondary' onClick={closeDialog}>Затвори</Button>
-          <Button variant='contained' sx={{ml: 1}} onClick={() => 1}>{ editMode ? 'Редактирай' : 'Добави'}</Button>
+          { data && !editMode ? null : <Button variant='contained' sx={{ml: 1}} onClick={validateFields}>{ editMode ? 'Редактирай' : 'Добави'}</Button> }
         </Box>
       </Box>
       <Menu
@@ -254,13 +364,13 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={() => 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk', fontSize: '14px'}} onClick={() => setEditMode(true)}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
             <EditIcon fontSize='small' color='primary' />
           </ListItemIcon>
           Редактирай
         </MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => deleteFunc(data._id.value, `${data.firstName.value} ${data.lastName.value}`)}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
             <DeleteIcon fontSize='small' color='error'/>
           </ListItemIcon>
@@ -268,6 +378,7 @@ const PlayerDialog = ({data, editMode, addFunction, closeFunc}) => {
         </MenuItem>
       </Menu>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
+      { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
     </Dialog>
   )
 }

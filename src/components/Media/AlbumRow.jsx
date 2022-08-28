@@ -69,17 +69,17 @@ const AlbumRow = ({ row, currentFolder, setCurrentFolder, setMainFunc, editFunc,
         {
           !row.main
             ? <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => setMainFunc(row._id)} >
-                <ListItemIcon sx={{minWidth: '30px !important'}}><HomeIcon fontSize='small' color='primary'/></ListItemIcon>
+                <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><HomeIcon fontSize='small' color='primary'/></ListItemIcon>
                   Задай като главен
               </MenuItem>
             : null
         }
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => editFunc(row._id, row.name)} >
-          <ListItemIcon sx={{minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>
           Промени име
         </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => deleteFunc(row._id, row.name)}>
-          <ListItemIcon sx={{minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>Изтрий</MenuItem>
       </Menu>
     </Box>
   )
