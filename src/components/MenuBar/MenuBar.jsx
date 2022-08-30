@@ -63,7 +63,7 @@ const MenuBar = () => {
         <ListItemText
           sx={{pl: 2, pr: 2 }}
           primary={user.name}
-          secondary={user.team.name}
+          secondary={user.team?.name}
           primaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk'}}}
           secondaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk'}}}
         />        

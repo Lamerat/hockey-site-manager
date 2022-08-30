@@ -20,3 +20,9 @@ export const handTranslation = {
   left: 'Ляв',
   right: 'Десен'
 }
+
+export const eventTranslation = {
+  game: 'Мач',
+  training: 'Тренировка',
+  other: 'Друго'
+}

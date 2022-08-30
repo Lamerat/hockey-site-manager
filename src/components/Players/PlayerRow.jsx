@@ -24,7 +24,7 @@ const PlayerRow = ({ row, profileFunc, deleteFunc, hideFunc }) => {
         <Box width='8%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.height}</Box>
         <Box width='8%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.weight}</Box>
         <Box width='3%' display='flex' alignItems='center' justifyContent='right'>
-          <IconButton size='small' ref={menuAnchor} onClick={(e) => setOpenMenu(!openMenu)}><MoreVertIcon fontSize='18px' color='secondary' /></IconButton>
+          <IconButton size='small' ref={menuAnchor} onClick={() => setOpenMenu(!openMenu)}><MoreVertIcon fontSize='18px' color='secondary' /></IconButton>
         </Box>
       </Stack>
       <Menu

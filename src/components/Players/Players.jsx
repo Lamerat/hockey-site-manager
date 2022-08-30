@@ -45,7 +45,6 @@ const Players = () => {
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
 
-
   const history = useNavigate()
 
 
