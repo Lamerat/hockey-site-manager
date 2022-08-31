@@ -22,5 +22,4 @@ const EventRow = ({ row }) => {
   )
 }
 
-
 export default EventRow

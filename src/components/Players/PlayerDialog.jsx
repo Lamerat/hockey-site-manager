@@ -179,9 +179,11 @@ const PlayerDialog = ({ data, addFunction, closeFunc, editFunction, deleteFunc }
           {
             data && !editMode
               ? <IconButton ref={menuAnchor} onClick={() => setOpenMenu(!openMenu)}><MenuIcon color='secondary' /></IconButton>
-              : <Tooltip title='Откажи редактирането' arrow>
-                  <IconButton onClick={cancelEdit}><EditOffIcon color='secondary' /></IconButton>
-                </Tooltip>
+              : editMode
+                ? <Tooltip title='Откажи редактирането' arrow>
+                    <IconButton onClick={cancelEdit}><EditOffIcon color='secondary' /></IconButton>
+                  </Tooltip>
+                : null
           }
         </Box>
       </Box>

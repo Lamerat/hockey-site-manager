@@ -19,6 +19,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import LinearProgress from '@mui/material/LinearProgress'
 import EventRow from './EventRow'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
+import OtherEventDialog from './OtherEventDialog'
 
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false, hidden: true,  hasNextPage: false, sort: { date: -1 } }
@@ -39,6 +40,7 @@ const Events = () => {
   const [filterBadge, setFilterBadge] = useState(true)
   const [reloadList, setReloadList] = useState(false)
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
+  const [showOtherDialog, setShowOtherDialog] = useState({ show: false, data: null })
 
   const history = useNavigate()
 
@@ -170,7 +172,7 @@ const Events = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => setShowOtherDialog({ show: true, data: null })}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><SportsHockeyIcon fontSize='small' /></ListItemIcon>Мач
         </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1}>
@@ -180,6 +182,7 @@ const Events = () => {
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><ForestIcon fontSize='small'/></ListItemIcon>Друго
         </MenuItem>
       </Menu>
+      { showOtherDialog.show ? <OtherEventDialog /> : null }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
     </Container>
   )
