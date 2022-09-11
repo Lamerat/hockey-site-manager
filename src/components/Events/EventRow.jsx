@@ -2,12 +2,19 @@ import React from 'react'
 import { Paper, Box, Stack } from '@mui/material'
 import { formatDate } from '../../common/help-functions'
 import { eventTranslation } from '../../config/constants'
+import moment from 'moment'
 
-const EventRow = ({ row }) => {
+const EventRow = ({ row, actionFunc }) => {
   const score = row.type === 'game' && row.finalScore.home ? `${row.finalScore.home} : ${row.finalScore.visitor}` : ' - '
 
+  let pastGame = false
+  if (row.type === 'game' && moment(row.date).add(1, 'days').isBefore(new Date())) {
+    if (!row.finalScore.home || !row.finalScore.visitor) pastGame = true
+  }
+  
+
   return (
-    <Paper elevation={1} sx={{p: 1.5, mt: 1}}>
+    <Paper elevation={1} sx={{p: 1.5, mt: 1, cursor: 'pointer', backgroundColor: pastGame ? '#ffebc8' : null}} onClick={() => actionFunc(row._id)}>
       <Stack direction='row' alignItems='center' minHeight={28}>
         <Box width='9%' fontFamily='CorsaGrotesk' fontSize='14px'>{formatDate(row.date)}</Box>
         <Box width='9%' fontFamily='CorsaGrotesk' fontSize='14px'>{eventTranslation[row.type]}</Box>

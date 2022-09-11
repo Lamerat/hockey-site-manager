@@ -1,15 +1,17 @@
 export const editorConfig = {
   toolbar: [
       { name: 'corrections', items: ['Undo', 'Redo'] },
-      { name: 'basicStyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
-      { name: 'styles', items: ['Format'] },
-      { name: 'paragraph', items: ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'NumberedList', 'BulletedList'] },
+      { name: 'basicStyles', items: ['Bold', 'Italic', 'Underline'] },
       { name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText'] },
-      { name: 'tools', items: ['Link', 'Table', 'Image'] },
-      { name: 'other', items: ['Maximize'] }
+      { name: 'tools', items: ['Link',] },
+      
   ],
+
   removeButtons: 'Subscript,Superscript',
-  enterMode: 'ENTER_BR',
+  resize_enabled: false,
+  resize_maxHeight: 200,
+  removePlugins: 'resize',
+  enterMode: 2,
   plugins: [
       'basicstyles',
       'clipboard',
@@ -26,8 +28,6 @@ export const editorConfig = {
       'wysiwygarea',
       'maximize',
       'format',
-      'resize',
-      'autogrow',
       'table',
       'image',
   ],

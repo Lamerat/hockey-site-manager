@@ -1,15 +1,14 @@
 import React, { useState, forwardRef, useRef, useEffect } from 'react'
-import { Box, Typography, FormControl, InputLabel, Select, Button, MenuItem, IconButton, InputAdornment, Menu, ListItemIcon, Tooltip, Stack } from '@mui/material'
+import { Box, Typography, FormControl, InputLabel, Select, Button, MenuItem, IconButton, InputAdornment, Menu, ListItemIcon, Tooltip, Stack, TextField } from '@mui/material'
 import { CKEditor } from 'ckeditor4-react'
 import { editorConfig } from '../../common/ck-simple-config'
 import { labelStyle, menuPaperStyle } from './Event.styles'
 import { Scrollbars } from 'react-custom-scrollbars-2'
-import { listCities } from '../../api/city'
+import { listArenas } from '../../api/arena'
 import moment from 'moment'
 import Dialog from '@mui/material/Dialog'
 import mainTheme from '../../theme/MainTheme'
 import Slide from '@mui/material/Slide'
-import TextField from '@mui/material/TextField'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import DatePicker from 'react-datepicker'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
@@ -31,15 +30,15 @@ const Transition = forwardRef(function Transition(props, ref) {
 
 const titleStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }
 const secondColor = mainTheme.palette.secondary.main
-const defaultEvent = { date: new Date(), time: new Date(), city: '', description: '' }
+const defaultTraining = { date: new Date(), time: new Date(), arena: '', description: '' }
 
-const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
+const Training = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
   const firstRenderRef = useRef(true)
   const menuAnchor = useRef(null)
 
-  const [event, setEvent] = useState(data ? data : defaultEvent)
+  const [event, setEvent] = useState(data ? data : defaultTraining)
   const [htmlData, setHtmlData] = useState(data ? data.description : '')
-  const [cities, setCities] = useState(null)
+  const [arenas, setArenas] = useState(null)
   const [openMenu, setOpenMenu] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
@@ -52,14 +51,14 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
       return
     }
 
-    listCities({ noPagination: true })
+    listArenas({ noPagination: true })
       .then(x => x.json())
       .then(result => {
         if (!result.success) throw new Error(result.message)
-        setCities(result.payload.docs)
+        setArenas(result.payload.docs)
         if (!data) {
-          setEvent(event => ({ ...event, city: result.payload.docs[0]._id }))
-          defaultEvent.city = result.payload.docs[0]._id
+          setEvent(event => ({ ...event, arena: result.payload.docs[0]._id }))
+          defaultTraining.arena = result.payload.docs[0]._id
         }
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
@@ -70,7 +69,7 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
     let haveChanges = false
 
     if (!data) {
-      Object.keys(event).forEach(x => event[x].toString() !== defaultEvent[x].toString() ? haveChanges = true : null)
+      Object.keys(event).forEach(x => event[x].toString() !== defaultTraining[x].toString() ? haveChanges = true : null)
       const simpleText = sanitizeHtml(htmlData, { allowedTags: []})
       if (simpleText.trim()) haveChanges = true
     } else if (editMode) {
@@ -91,17 +90,11 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
 
 
   const actionFunc = () => {
-    const simpleText = sanitizeHtml(htmlData, { allowedTags: []})
-    if (!simpleText.trim()) {
-      setErrorDialog({ show: true, message: 'За такъв тип събитие е нужно да има описание!' })
-      return
-    }
-
     const getDate = moment(event.date).format('YYYY-MM-DD') + 'T' + moment(event.time).format('HH:mm')
     const body = {
-      type: 'other',
+      type: 'training',
       date: moment(getDate).toDate(),
-      city: event.city,
+      arena: event.arena,
       description: htmlData
     }
 
@@ -140,7 +133,7 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
   return (
     <Dialog disableEnforceFocus open={true} TransitionComponent={Transition} keepMounted maxWidth='sm' fullWidth PaperProps={{sx: { p: 2, overflow: 'unset' }}}>
       <Box sx={titleStyle} borderBottom={1} borderColor={secondColor}>
-        <Typography fontFamily='CorsaGrotesk' color={secondColor} variant='h6' pb={0.5}>{ data ? editMode ? 'Редакция на събитие' : 'Преглед на събитие' : 'Добавяне на ново събитие' }</Typography>
+        <Typography fontFamily='CorsaGrotesk' color={secondColor} variant='h6' pb={0.5}>{ data ? editMode ? 'Редакция на тренировка' : 'Преглед на тренировка' : 'Добавяне на нова тренировка' }</Typography>
         <Box display='flex' alignItems='center' mr={-1}>
           {
             data && !editMode
@@ -154,9 +147,9 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
         </Box>
       </Box>
       {
-        !cities 
-          ? <Box minHeight='364.5px' width='100%' display='flex' alignItems='center' justifyContent='center'><CircularProgress size='100px'/></Box>
-          : <Box minHeight='364.5px'>
+        !arenas 
+          ? <Box minHeight='424.5px' width='100%' display='flex' alignItems='center' justifyContent='center'><CircularProgress size='100px'/></Box>
+          : <Box>
               <Stack direction='row' spacing={0} mb={2.5}>
                 <DatePicker
                   selected={event.date}
@@ -210,13 +203,17 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
                     />
                   }
                 />
-                <Box minWidth={20} />
+              </Stack>
+              <Stack direction='row' spacing={0} mb={2.5}>
                 <FormControl fullWidth required>
-                  <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Град</InputLabel>
-                  <Select  size='small' value={event.city} label='Град' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, city: e.target.value })}>
-                    { cities.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
+                  <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Пързалка</InputLabel>
+                  <Select  size='small' value={event.arena} label='Пързалка' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, arena: e.target.value })}>
+                    { arenas.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
                   </Select>
                 </FormControl>
+                <Box minWidth={20} />
+                <TextField size='small' label='Град' fullWidth value={arenas.filter(x => x._id === event.arena)[0].city.name} disabled />
+                
               </Stack>
               {
                 data && !editMode
@@ -263,4 +260,4 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
   )
 }
 
-export default OtherEventDialog
+export default Training

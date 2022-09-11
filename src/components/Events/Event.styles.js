@@ -32,3 +32,19 @@ export const badgeProps = {
     backgroundColor: '#ffc107'
   }
 }
+
+
+export const labelStyle = {
+  backgroundColor: 'white',
+  position: 'absolute',
+  fontSize: '1rem !important',
+  scale: '0.75 !important',
+  lineHeight: '1.4375em',
+  letterSpacing: '0.00938em',
+  pl: 0.6,
+  pr: 0.6,
+  whiteSpace: 'nowrap',
+  top: -14,
+  left: -2,
+  color: 'rgba(0, 0, 0, 0.38)'
+}
