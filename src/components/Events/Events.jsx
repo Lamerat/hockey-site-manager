@@ -23,6 +23,7 @@ import OtherEventDialog from './OtherEventDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import moment from 'moment'
 import Training from './Training'
+import Game from './Game'
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false, hidden: true,  hasNextPage: false, sort: { date: -1 } }
 
@@ -45,6 +46,7 @@ const Events = () => {
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
   const [showOtherDialog, setShowOtherDialog] = useState({ show: false, data: null })
   const [showTrainingDialog, setShowTrainingDialog] = useState({ show: false, data: null })
+  const [showGameDialog, setShowGameDialog] = useState({ show: false, data: null })
 
   const history = useNavigate()
 
@@ -292,7 +294,7 @@ const Events = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} >
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => setShowGameDialog({ show: true, data: null })}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><SportsHockeyIcon fontSize='small' /></ListItemIcon>Мач
         </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => setShowTrainingDialog({ show: true, data: null })}>
@@ -302,8 +304,21 @@ const Events = () => {
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><ForestIcon fontSize='small'/></ListItemIcon>Друго
         </MenuItem>
       </Menu>
-      { showOtherDialog.show ? <OtherEventDialog closeFunc={setShowOtherDialog} data={showOtherDialog.data} deleteFunc={prepareDeleteEvent} editFunction={editEvent} addFunction={createEvent} /> : null }
-      { showTrainingDialog.show ? <Training closeFunc={setShowTrainingDialog} data={showTrainingDialog.data} deleteFunc={prepareDeleteEvent} editFunction={editEvent} addFunction={createEvent} /> : null }
+      {
+        showOtherDialog.show
+          ? <OtherEventDialog closeFunc={setShowOtherDialog} data={showOtherDialog.data} deleteFunc={prepareDeleteEvent} editFunction={editEvent} addFunction={createEvent} />
+          : null
+      }
+      {
+        showTrainingDialog.show
+          ? <Training closeFunc={setShowTrainingDialog} data={showTrainingDialog.data} deleteFunc={prepareDeleteEvent} editFunction={editEvent} addFunction={createEvent} />
+          : null
+      }
+      {
+        showGameDialog.show
+          ? <Game closeFunc={setShowGameDialog} data={showGameDialog.data} deleteFunc={prepareDeleteEvent} editFunction={editEvent} addFunction={createEvent} />
+          : null
+      }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
     </Container>
