@@ -243,26 +243,68 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
                 />
                 <Box minWidth={20} />
                 <FormControl fullWidth required>
-                  <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Домакин</InputLabel>
-                  <Select  size='small' value={event.homeTeam} label='Домакин' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, homeTeam: e.target.value })}>
-                    { teams.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
-                  </Select>
-                </FormControl>
-              </Stack>
-              <Stack direction='row' spacing={0} mb={2.5}>
-                <FormControl fullWidth required>
                   <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Пързалка</InputLabel>
                   <Select  size='small' value={event.arena} label='Пързалка' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, arena: e.target.value })}>
                     { arenas.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
                   </Select>
                 </FormControl>
-                <Box minWidth={20} />
-                <TextField size='small' label='Град' fullWidth value={arenas.filter(x => x._id === event.arena)[0].city.name} disabled />
+              </Stack>
+              <Stack direction='row' spacing={0} mb={2.5}>
+                <FormControl fullWidth required>
+                  <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Домакин</InputLabel>
+                  <Select  size='small' value={event.homeTeam} label='Домакин' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, homeTeam: e.target.value })}>
+                    { teams.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
+                  </Select>
+                </FormControl>
                 <Box minWidth={20} />
                 <FormControl fullWidth required>
                   <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Гост</InputLabel>
                   <Select  size='small' value={event.visitorTeam} label='Гост' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, visitorTeam: e.target.value })}>
                     { teams.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
+                  </Select>
+                </FormControl>
+                <Box minWidth={20} />
+                <TextField size='small' label='Град' fullWidth value={arenas.filter(x => x._id === event.arena)[0].city.name} disabled />
+              </Stack>
+              <Stack direction='row' spacing={2.5} mb={2.5}>
+                <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
+                  <Typography variant='caption' sx={labelStyle}>Първа третина</Typography>
+                  <Stack direction='row' spacing={1}>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <Box display='flex' alignItems='center'>:</Box>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                  </Stack>
+                </Box>
+                <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
+                  <Typography variant='caption' sx={labelStyle}>Втора третина</Typography>
+                  <Stack direction='row' spacing={1}>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <Box display='flex' alignItems='center'>:</Box>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                  </Stack>
+                </Box>
+                <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
+                  <Typography variant='caption' sx={labelStyle}>Трета третина</Typography>
+                  <Stack direction='row' spacing={1}>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <Box display='flex' alignItems='center'>:</Box>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                  </Stack>
+                </Box>
+                <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
+                  <Typography variant='caption' sx={labelStyle}>Краен резултат</Typography>
+                  <Stack direction='row' spacing={1}>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <Box display='flex' alignItems='center'>:</Box>
+                    <TextField size='small' value={0} sx={{width: 40}} />
+                  </Stack>
+                </Box>
+                <FormControl fullWidth required>
+                  <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Забележка</InputLabel>
+                  <Select size='small' value='draw' label='Забележка'>
+                    <MenuItem value='draw'>Равен резултат</MenuItem>
+                    <MenuItem value='overtime'>Продължение</MenuItem>
+                    <MenuItem value='penalty'>Наказателни удари</MenuItem>
                   </Select>
                 </FormControl>
               </Stack>

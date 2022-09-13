@@ -154,6 +154,24 @@ const Events = () => {
             setShowTrainingDialog({ show: true, data: { _id: payload._id, date: new Date(payload.date), time: new Date(payload.date), arena: payload.arena._id, description: payload.description } })
             break
           default:
+            setShowGameDialog({
+              show: true,
+              data: {
+                _id: payload._id,
+                date: new Date(payload.date),
+                time: new Date(payload.date),
+                arena: payload.arena._id,
+                homeTeam: payload.homeTeam._id,
+                visitorTeam: payload.visitorTeam._id,
+                draw: payload.draw,
+                overtime: payload.overtime,
+                firstThird: payload.firstThird,
+                secondThird: payload.secondThird,
+                thirdThird: payload.thirdThird,
+                finalScore: payload.finalScore,
+                description: payload.description
+              }
+            })
             break
         }
       })
