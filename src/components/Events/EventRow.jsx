@@ -35,7 +35,7 @@ const EventRow = ({ row, actionFunc }) => {
         <Box width='18%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.type === 'other' ? '-' : row.arena.name}</Box>
         <Box width='13%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.type !== 'game' ? '-' : row.homeTeam.name}</Box>
         <Box width='13%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.type !== 'game' ? '-' : row.visitorTeam.name}</Box>
-        <Box width='12%' fontFamily='CorsaGrotesk' fontSize='14px'>{score} {overtime}</Box>
+        <Box width='12%' fontFamily='CorsaGrotesk' fontSize='14px'>{score}<span style={{fontSize: '12px', paddingLeft: 3}}>{overtime}</span></Box>
         <Box width='14%' fontFamily='CorsaGrotesk' fontSize='14px'>{row.createdBy.name}</Box>
       </Stack>
       <Popover
