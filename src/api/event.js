@@ -42,3 +42,11 @@ export const deleteEventRequest = async (_id) => {
     headers: headers()
   })
 }
+
+
+export const getFilterData = async () => {
+  return fetch(`${API}/event/filter`, {
+    method: 'GET',
+    headers: headers()
+  })
+}

@@ -6,7 +6,7 @@ import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack, Menu, Me
 import { getCredentials, cleanCredentials } from '../../config/storage'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import { menuPaperStyle, badgeProps } from './Event.styles.js'
-import { listEvents, createEventRequest, singleEventRequest, editEventRequest, deleteEventRequest } from '../../api/event'
+import { listEvents, createEventRequest, singleEventRequest, editEventRequest, deleteEventRequest, getFilterData } from '../../api/event'
 import { sortBox, sortLabel, rotateAngle } from '../../common/sortStyles'
 import mainTheme from '../../theme/MainTheme'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
@@ -27,7 +27,7 @@ import Game from './Game'
 import FilterMenu from './FilterMenu'
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false, hidden: true,  hasNextPage: false, sort: { date: -1 } }
-
+let allowedTypes = []
 
 const Events = () => {
   const { setShared } = useContext(SharedContext)
@@ -42,6 +42,7 @@ const Events = () => {
   const [openAddMenu, setOpenAddMenu] = useState(false)
   const [openFilterMenu, setOpenFilterMenu] = useState(false)
   const [filterBadge, setFilterBadge] = useState(true)
+  const [possibleFilters, setPossibleFilters] = useState(null)
   const [reloadList, setReloadList] = useState(false)
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
@@ -66,6 +67,14 @@ const Events = () => {
       pageNumber: query.pageNumber,
       pageSize: 20,
       sort: query.sort,
+      startDate: query.startDate,
+      endDate: query.endDate,
+      type: query.type,
+      homeTeam: query.homeTeam,
+      visitorTeam: query.visitorTeam,
+      arena: query.arena,
+      city: query.city,
+      createdBy: query.createdBy
     }
 
     listEvents(body)
@@ -77,9 +86,37 @@ const Events = () => {
         if (!result.success) throw new Error(result.message)
         setEvents(events => query.pageNumber === 1 ? result.payload.docs : [ ...events, ...result.payload.docs])
         setQuery(query => ({ ...query, pageNumber: result.payload.page, hasNextPage: result.payload.hasNextPage }))
+        // check for active filter
+        const filterFields = [body.startDate, body.homeTeam, body.visitorTeam, body.arena, body.city, body.createdBy]
+        const haveFilter = (allowedTypes.some(x => !body.type.includes(x)) && body.type.length) || filterFields.some(x => x) ? false : true
+        setFilterBadge(haveFilter)
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }, [query.pageNumber, query.sort, history, reloadList])
+  }, [query.pageNumber, query.sort, history, reloadList, query.endDate, query.startDate, query.type, query.homeTeam, query.visitorTeam, query.arena, query.city, query.createdBy])
+
+
+  useEffect(() => {
+    if (!events) return
+
+    getFilterData()
+      .then(x => x.json())
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        const payload = result.payload[0]
+        setPossibleFilters({
+          type: payload.type,
+          startDate: null,
+          endDate: null,
+          homeTeam: payload.homeTeam,
+          visitorTeam: payload.visitorTeam,
+          arena: payload.arena,
+          city: payload.city,
+          createdBy: payload.createdBy
+        })
+        allowedTypes = [ ...payload.type ]
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }, [events])
 
 
   const handlePagination = (scrollTop, height, scrollHeight) => {
@@ -356,7 +393,17 @@ const Events = () => {
       }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
-      <FilterMenu searchMenuRef={filterMenuRef} openMenu={openFilterMenu} setOpenMenu={setOpenFilterMenu} addFilterFunc={addFilter} />
+      {
+        possibleFilters
+          ? <FilterMenu
+              searchMenuRef={filterMenuRef}
+              openMenu={openFilterMenu}
+              setOpenMenu={setOpenFilterMenu}
+              addFilterFunc={addFilter}
+              filterData={possibleFilters}
+            />
+          : null
+      }
     </Container>
   )
 }
