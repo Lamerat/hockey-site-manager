@@ -164,12 +164,12 @@ const Events = () => {
                 homeTeam: payload.homeTeam._id,
                 visitorTeam: payload.visitorTeam._id,
                 draw: payload.draw,
-                overtime: payload.overtime,
+                overtime: payload.overtime || 'draw',
                 firstThird: payload.firstThird,
                 secondThird: payload.secondThird,
                 thirdThird: payload.thirdThird,
                 finalScore: payload.finalScore,
-                description: payload.description
+                description: payload.description || ''
               }
             })
             break

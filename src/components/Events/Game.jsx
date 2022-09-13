@@ -38,8 +38,7 @@ const defaultGame = {
   arena: '',
   homeTeam: '',
   visitorTeam: '',
-  draw: false,
-  overtime: 'overtime',
+  overtime: 'draw',
   firstThird: { home: 0, visitor: 0 },
   secondThird: { home: 0, visitor: 0 },
   thirdThird: { home: 0, visitor: 0 },
@@ -167,7 +166,19 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
     }
   }
 
+  const calcResult = () => {
+    const allScores = [ ...Object.values(event.firstThird), ...Object.values(event.secondThird), ...Object.values(event.thirdThird)]
+    if (allScores.some(x => !x || isNaN(x))) return false
 
+    const homeScore = Number(event.firstThird.home) + Number(event.secondThird.home) + Number(event.thirdThird.home)
+    const visitorScore = Number(event.firstThird.visitor) + Number(event.secondThird.visitor) + Number(event.thirdThird.visitor)
+    console.log(allScores)
+    // firstThird: { home: 0, visitor: 0 },
+    // secondThird: { home: 0, visitor: 0 },
+    // thirdThird: { home: 0, visitor: 0 },
+  }
+
+calcResult()
   return (
     <Dialog disableEnforceFocus open={true} TransitionComponent={Transition} keepMounted maxWidth='md' fullWidth PaperProps={{sx: { p: 2, overflow: 'unset' }}}>
       <Box sx={titleStyle} borderBottom={1} borderColor={secondColor}>
@@ -301,7 +312,7 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
                 </Box>
                 <FormControl fullWidth required>
                   <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Забележка</InputLabel>
-                  <Select size='small' value='draw' label='Забележка'>
+                  <Select size='small' value={event.overtime} label='Забележка'>
                     <MenuItem value='draw'>Равен резултат</MenuItem>
                     <MenuItem value='overtime'>Продължение</MenuItem>
                     <MenuItem value='penalty'>Наказателни удари</MenuItem>
