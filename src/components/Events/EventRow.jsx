@@ -48,7 +48,7 @@ const EventRow = ({ row, actionFunc }) => {
         onClose={() => setShowWarning(false)}
         disableRestoreFocus
       >
-        <Typography sx={{ p: 1 }}>Мачът трябва вече да е завършил но липсва резултат</Typography>
+        <Typography fontFamily='CorsaGrotesk' fontSize='14px' sx={{ p: 1 }}>Мачът трябва вече да е завършил но липсва резултат</Typography>
       </Popover>
     </Paper>
   )
