@@ -39,10 +39,10 @@ const defaultGame = {
   homeTeam: '',
   visitorTeam: '',
   overtime: 'draw',
-  firstThird: { home: 0, visitor: 0 },
-  secondThird: { home: 0, visitor: 0 },
-  thirdThird: { home: 0, visitor: 0 },
-  finalScore: { home: 0, visitor: 0 },
+  firstThird: { home: '', visitor: '' },
+  secondThird: { home: '', visitor: '' },
+  thirdThird: { home: '', visitor: '' },
+  finalScore: { home: '', visitor: '' },
   description: '',
 }
 
@@ -128,13 +128,42 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
 
   const actionFunc = () => {
     const getDate = moment(event.date).format('YYYY-MM-DD') + 'T' + moment(event.time).format('HH:mm')
-    const body = {
-      type: 'training',
-      date: moment(getDate).toDate(),
-      arena: event.arena,
-      description: htmlData
+    const homeScore = Number(event.firstThird.home) + Number(event.secondThird.home) + Number(event.thirdThird.home)
+    const visitorScore = Number(event.firstThird.visitor) + Number(event.secondThird.visitor) + Number(event.thirdThird.visitor)
+
+    if (Number(event.finalScore.home) < homeScore || Number(event.finalScore.visitor < visitorScore)) {
+      setErrorDialog({ show: true, message: 'Не е възможно общия резултат да е по-малък от сбора от третините!' })
+      return
     }
 
+    if (Number(event.finalScore.home) === Number(event.finalScore.visitor) && event.overtime !== 'draw') {
+      setErrorDialog({ show: true, message: 'При продължение или наказателни удари трябва да има победител!' })
+      return
+    }
+
+    if (![event.homeTeam, event.visitorTeam].includes(user.team._id)) {
+      setErrorDialog({ show: true, message: 'Единият от двата отбора трябва да е вашият!' })
+      return
+    }
+
+    if (event.homeTeam === event.visitorTeam) {
+      setErrorDialog({ show: true, message: 'Двата отбора трябва да са различни!' })
+      return
+    }
+
+    const body = {
+      type: 'game',
+      date: moment(getDate).toDate(),
+      arena: event.arena,
+      homeTeam: event.homeTeam,
+      visitorTeam: event.visitorTeam,
+      firstThird: event.firstThird,
+      secondThird: event.secondThird,
+      thirdThird: event.thirdThird,
+      finalScore: event.finalScore,
+      description: htmlData
+    }
+    if (homeScore === visitorScore) body.overtime = event.overtime
     if (data && data._id) body._id = data._id
 
     if (!editMode) {
@@ -168,17 +197,49 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
 
   const calcResult = () => {
     const allScores = [ ...Object.values(event.firstThird), ...Object.values(event.secondThird), ...Object.values(event.thirdThird)]
-    if (allScores.some(x => !x || isNaN(x))) return false
+    if (allScores.some(x => x === null || x === undefined || x === '' || isNaN(x))) return false
 
     const homeScore = Number(event.firstThird.home) + Number(event.secondThird.home) + Number(event.thirdThird.home)
     const visitorScore = Number(event.firstThird.visitor) + Number(event.secondThird.visitor) + Number(event.thirdThird.visitor)
-    console.log(allScores)
-    // firstThird: { home: 0, visitor: 0 },
-    // secondThird: { home: 0, visitor: 0 },
-    // thirdThird: { home: 0, visitor: 0 },
+    
+    return homeScore === visitorScore ? true : false
   }
 
-calcResult()
+  const changeScore = (part, team, value) => {
+    if (isNaN(value) || Number(value) < 0 || value.length > 2) return
+
+    const newScore = { ...event[part], [team]: value }
+    const newEventData = { ...event, [part]: newScore }
+
+    const allScores = [ ...Object.values(newEventData.firstThird), ...Object.values(newEventData.secondThird), ...Object.values(newEventData.thirdThird)]
+    if (allScores.some(x => x === null || x === undefined || x === '' || isNaN(x))) {
+      newEventData.finalScore = { home: '', visitor: '' }
+    } else {
+      newEventData.finalScore = {
+        home: Number(newEventData.firstThird.home) + Number(newEventData.secondThird.home) + Number(newEventData.thirdThird.home),
+        visitor: Number(newEventData.firstThird.visitor) + Number(newEventData.secondThird.visitor) + Number(newEventData.thirdThird.visitor)
+      }  
+    }
+    setEvent(newEventData)
+  }
+
+  const changeFinalScore = (team, value) => {
+    if (isNaN(value) || Number(value) < 0 || value.length > 2) return
+    setEvent({ ...event, finalScore: { ...event.finalScore, [team]: value} })
+  }
+
+  const changeOvertime = (value) => {
+    if (value === 'draw') {
+      const finalScore = {
+        home: Number(event.firstThird.home) + Number(event.secondThird.home) + Number(event.thirdThird.home),
+        visitor: Number(event.firstThird.visitor) + Number(event.secondThird.visitor) + Number(event.thirdThird.visitor)
+      }
+      setEvent({ ...event, finalScore, overtime: value })
+      return
+    }
+    setEvent({ ...event, overtime: value })
+  }
+
   return (
     <Dialog disableEnforceFocus open={true} TransitionComponent={Transition} keepMounted maxWidth='md' fullWidth PaperProps={{sx: { p: 2, overflow: 'unset' }}}>
       <Box sx={titleStyle} borderBottom={1} borderColor={secondColor}>
@@ -264,14 +325,14 @@ calcResult()
                 <FormControl fullWidth required>
                   <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Домакин</InputLabel>
                   <Select  size='small' value={event.homeTeam} label='Домакин' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, homeTeam: e.target.value })}>
-                    { teams.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
+                    { teams.map(x => <MenuItem key={x._id} value={x._id}>{x.name} - {x.city.name}</MenuItem> ) }
                   </Select>
                 </FormControl>
                 <Box minWidth={20} />
                 <FormControl fullWidth required>
                   <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Гост</InputLabel>
                   <Select  size='small' value={event.visitorTeam} label='Гост' disabled={data && !editMode} onChange={(e) => setEvent({ ...event, visitorTeam: e.target.value })}>
-                    { teams.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem> ) }
+                    { teams.map(x => <MenuItem key={x._id} value={x._id}>{x.name} - {x.city.name}</MenuItem> ) }
                   </Select>
                 </FormControl>
                 <Box minWidth={20} />
@@ -279,55 +340,123 @@ calcResult()
               </Stack>
               <Stack direction='row' spacing={2.5} mb={2.5}>
                 <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
-                  <Typography variant='caption' sx={labelStyle}>Първа третина</Typography>
+                  <Typography variant='caption' sx={data && !editMode ? labelStyle : { ...labelStyle, color: 'rgba(0, 0, 0, 0.6)' }}>Първа третина</Typography>
                   <Stack direction='row' spacing={1}>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={data && !editMode}
+                      sx={{width: 40}}
+                      value={event.firstThird.home}
+                      inputProps={event.firstThird.home?.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeScore('firstThird', 'home', e.target.value)}
+                    />
                     <Box display='flex' alignItems='center'>:</Box>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={data && !editMode}
+                      value={event.firstThird.visitor}
+                      sx={{width: 40}}
+                      inputProps={event.firstThird?.visitor?.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeScore('firstThird', 'visitor', e.target.value)}
+                    />
                   </Stack>
                 </Box>
                 <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
-                  <Typography variant='caption' sx={labelStyle}>Втора третина</Typography>
+                  <Typography variant='caption' sx={data && !editMode ? labelStyle : { ...labelStyle, color: 'rgba(0, 0, 0, 0.6)' }}>Втора третина</Typography>
                   <Stack direction='row' spacing={1}>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={data && !editMode}
+                      sx={{width: 40}}
+                      value={event.secondThird.home}
+                      inputProps={event.secondThird.home.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeScore('secondThird', 'home', e.target.value)}
+                    />
                     <Box display='flex' alignItems='center'>:</Box>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={data && !editMode}
+                      sx={{width: 40}}
+                      value={event.secondThird.visitor}
+                      inputProps={event.secondThird.visitor.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeScore('secondThird', 'visitor', e.target.value)}
+                    />
                   </Stack>
                 </Box>
                 <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
-                  <Typography variant='caption' sx={labelStyle}>Трета третина</Typography>
+                  <Typography variant='caption' sx={data && !editMode ? labelStyle : { ...labelStyle, color: 'rgba(0, 0, 0, 0.6)' }}>Трета третина</Typography>
                   <Stack direction='row' spacing={1}>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={data && !editMode}
+                      sx={{width: 40}}
+                      value={event.thirdThird.home}
+                      inputProps={event.thirdThird.home.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeScore('thirdThird', 'home', e.target.value)}
+                    />
                     <Box display='flex' alignItems='center'>:</Box>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={data && !editMode}
+                      sx={{width: 40}}
+                      value={event.thirdThird.visitor}
+                      inputProps={event.thirdThird.visitor.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeScore('thirdThird', 'visitor', e.target.value)}
+                    />
                   </Stack>
                 </Box>
                 <Box height={40} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2}>
-                  <Typography variant='caption' sx={labelStyle}>Краен резултат</Typography>
+                  <Typography variant='caption' sx={data && !editMode ? labelStyle : { ...labelStyle, color: 'rgba(0, 0, 0, 0.6)' }}>Краен резултат</Typography>
                   <Stack direction='row' spacing={1}>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={(data && !editMode) || event.overtime === 'draw'}
+                      sx={{width: 40}}
+                      value={event.finalScore.home}
+                      inputProps={event.finalScore.home.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeFinalScore('home', e.target.value)}
+                    />
                     <Box display='flex' alignItems='center'>:</Box>
-                    <TextField size='small' value={0} sx={{width: 40}} />
+                    <TextField
+                      size='small'
+                      autoComplete='off'
+                      disabled={(data && !editMode) || event.overtime === 'draw'}
+                      sx={{width: 40}}
+                      value={event.finalScore.visitor}
+                      inputProps={event.finalScore.visitor.toString().length > 1 ? {sx: { pl: 1.4, pr: 1.2 }} : {sx: {}}}
+                      onChange={(e) => changeFinalScore('visitor', e.target.value)}
+                    />
                   </Stack>
                 </Box>
-                <FormControl fullWidth required>
-                  <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Забележка</InputLabel>
-                  <Select size='small' value={event.overtime} label='Забележка'>
-                    <MenuItem value='draw'>Равен резултат</MenuItem>
-                    <MenuItem value='overtime'>Продължение</MenuItem>
-                    <MenuItem value='penalty'>Наказателни удари</MenuItem>
-                  </Select>
-                </FormControl>
+                {
+                  calcResult()
+                    ? <FormControl fullWidth required>
+                        <InputLabel sx={{zIndex: 0}} disabled={data && !editMode}>Забележка</InputLabel>
+                        <Select size='small' value={event.overtime} disabled={data && !editMode} label='Забележка' onChange={(e) => changeOvertime(e.target.value)}>
+                          <MenuItem value='draw'>Равен резултат</MenuItem>
+                          <MenuItem value='overtime'>Продължение</MenuItem>
+                          <MenuItem value='penalties'>Наказателни удари</MenuItem>
+                        </Select>
+                      </FormControl>
+                    : null
+                }
               </Stack>
               {
                 data && !editMode
-                  ? <Box height={212} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2} pr={0}>
+                  ? <Box height={154} border='1px solid rgba(0, 0, 0, 0.26)' borderRadius='4px' position='relative' p={2} pr={0}>
                       <Typography variant='caption' sx={labelStyle}>Описание</Typography>
                       <Scrollbars style={{color: 'rgba(0, 0, 0, 0.38)'}}>
-                        <Box pr={2}>{ parse(data.description) }</Box>
+                        <Box pr={2} fontFamily='CorsaGrotesk' fontSize='14px'>{ parse(data.description) }</Box>
                       </Scrollbars>
                     </Box>
-                  : <CKEditor config={{ ...editorConfig, height: 100}} initData={event.description} onChange={(e) => setHtmlData(e.editor.getData())} />
+                  : <CKEditor config={{ ...editorConfig, height: 140}} initData={event.description} onChange={(e) => setHtmlData(e.editor.getData())} />
               }
               <Box mt={3} display='flex' justifyContent='right'>
                   <Button variant='contained' color='secondary' onClick={closeDialog}>Затвори</Button>

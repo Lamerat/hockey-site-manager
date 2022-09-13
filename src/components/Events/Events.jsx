@@ -130,7 +130,9 @@ const Events = () => {
           setShowOtherDialog({ show: false, data: null })
         } else if (result.payload.type === 'training') {
           setShowTrainingDialog({ show: false, data: null })
-        }
+        } else if (result.payload.type === 'game') {
+          setShowGameDialog({ show: false, data: null })
+        } 
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
@@ -154,6 +156,15 @@ const Events = () => {
             setShowTrainingDialog({ show: true, data: { _id: payload._id, date: new Date(payload.date), time: new Date(payload.date), arena: payload.arena._id, description: payload.description } })
             break
           default:
+            const firstThird = { ...payload.firstThird }
+            const secondThird = { ...payload.secondThird }
+            const thirdThird = { ...payload.thirdThird }
+            const finalScore = { ...payload.finalScore }
+            Object.keys(firstThird).forEach(x => firstThird[x] === null ? firstThird[x] = '' : null )
+            Object.keys(secondThird).forEach(x => secondThird[x] === null ? secondThird[x] = '' : null )
+            Object.keys(thirdThird).forEach(x => thirdThird[x] === null ? thirdThird[x] = '' : null )
+            Object.keys(finalScore).forEach(x => finalScore[x] === null ? finalScore[x] = '' : null )
+
             setShowGameDialog({
               show: true,
               data: {
@@ -163,12 +174,11 @@ const Events = () => {
                 arena: payload.arena._id,
                 homeTeam: payload.homeTeam._id,
                 visitorTeam: payload.visitorTeam._id,
-                draw: payload.draw,
                 overtime: payload.overtime || 'draw',
-                firstThird: payload.firstThird,
-                secondThird: payload.secondThird,
-                thirdThird: payload.thirdThird,
-                finalScore: payload.finalScore,
+                firstThird,
+                secondThird,
+                thirdThird,
+                finalScore,
                 description: payload.description || ''
               }
             })
@@ -200,8 +210,8 @@ const Events = () => {
           case 'training':
             setShowTrainingDialog({ show: false, data: null })
             break
-
           default:
+            setShowGameDialog({ show: false, data: null })
             break
         }
       })
@@ -228,8 +238,11 @@ const Events = () => {
           case 'other':
             setShowOtherDialog({ show: false, data: null })
             break
-
+          case 'training':
+            setShowTrainingDialog({ show: false, data: null })
+            break
           default:
+            setShowGameDialog({ show: false, data: null })
             break
         }
 
