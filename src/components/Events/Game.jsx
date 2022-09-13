@@ -83,7 +83,7 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
 
 
   useEffect(() => {
-    if(event.arena === '') return
+    if(arenas === null) return
 
     listTeams({ noPagination: true })
       .then(x => x.json())
@@ -99,7 +99,7 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
         }
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
-  }, [data, event.arena, user])
+  }, [data, arenas, user])
 
 
   const closeDialog = () => {

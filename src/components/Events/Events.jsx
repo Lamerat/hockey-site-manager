@@ -88,7 +88,7 @@ const Events = () => {
         setQuery(query => ({ ...query, pageNumber: result.payload.page, hasNextPage: result.payload.hasNextPage }))
         // check for active filter
         const filterFields = [body.startDate, body.homeTeam, body.visitorTeam, body.arena, body.city, body.createdBy]
-        const haveFilter = (allowedTypes.some(x => !body.type.includes(x)) && body.type.length) || filterFields.some(x => x) ? false : true
+        const haveFilter = (allowedTypes.some(x => !body.type?.includes(x)) && body.type?.length) || filterFields.some(x => x) ? false : true
         setFilterBadge(haveFilter)
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
