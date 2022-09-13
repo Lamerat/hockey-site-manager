@@ -24,6 +24,7 @@ import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import moment from 'moment'
 import Training from './Training'
 import Game from './Game'
+import FilterMenu from './FilterMenu'
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false, hidden: true,  hasNextPage: false, sort: { date: -1 } }
 
@@ -87,6 +88,9 @@ const Events = () => {
       setQuery({ ...query, pageNumber: query.pageNumber + 1, hasNextPage: false })
     }
   }
+
+
+  const addFilter = (filters) => setQuery({ ...query, ...filters, pageNumber: 1, hasNextPage: false })
 
 
   const renderSort = (field) => {
@@ -352,6 +356,7 @@ const Events = () => {
       }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
+      <FilterMenu searchMenuRef={filterMenuRef} openMenu={openFilterMenu} setOpenMenu={setOpenFilterMenu} addFilterFunc={addFilter} />
     </Container>
   )
 }

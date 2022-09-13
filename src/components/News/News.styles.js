@@ -33,7 +33,7 @@ export const searchMenuProps = {
       width: 250,
     },
   },
-};
+}
 
 
 export const badgeProps = {

@@ -48,3 +48,12 @@ export const labelStyle = {
   left: -2,
   color: 'rgba(0, 0, 0, 0.38)'
 }
+
+export const searchMenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: 48 * 4.5 + 8,
+      width: 250,
+    },
+  },
+}
