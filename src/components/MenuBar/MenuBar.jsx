@@ -10,6 +10,7 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import SharedContext from '../../context/SharedContext'
 import UserContext from '../../context/UserContext'
 import { getCredentials } from '../../config/storage'
+import MyProfileDialog from './MyProfileDialog'
 
 
 const MenuBar = () => {
@@ -17,6 +18,8 @@ const MenuBar = () => {
   const { user } = useContext(UserContext)
   
   const [anchorEl, setAnchorEl] = useState(null)
+  const [showProfile, setShowProfile] = useState(false)
+
   const history = useNavigate()
 
   const open = Boolean(anchorEl)
@@ -68,7 +71,7 @@ const MenuBar = () => {
           secondaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk'}}}
         />        
         <Divider />
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk'}}>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk'}} onClick={() => setShowProfile(true)}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
             <PersonIcon fontSize='small' />
           </ListItemIcon>
@@ -81,6 +84,7 @@ const MenuBar = () => {
           Изход
         </MenuItem>
       </Menu>
+      { showProfile ? <MyProfileDialog closeFunc={setShowProfile}/> : null }
     </AppBar>
   )
 }
