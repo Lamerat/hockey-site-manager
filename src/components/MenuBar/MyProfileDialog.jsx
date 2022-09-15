@@ -17,6 +17,7 @@ import CheckIcon from '@mui/icons-material/Check'
 import ClearIcon from '@mui/icons-material/Clear'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
+import PasswordDialog from './PasswordDialog'
 
 
 const titleStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }
@@ -44,6 +45,7 @@ const MyProfileDialog = ({ closeFunc }) => {
   const [info, setInfo] = useState(infoDefault)
   const [editMode, setEditMode] = useState(false)
   const [prepareEdit, setPrepareEdit] = useState(false)
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
 
@@ -182,13 +184,14 @@ const MyProfileDialog = ({ closeFunc }) => {
                 }}
               />
               <Box display='flex' justifyContent='space-between' alignItems='center'>
-                <Button variant='contained' color='secondary' onClick={() => closeFunc(false)}>Смяна на парола</Button>
+                <Button variant='contained' color='secondary' onClick={() => setShowPasswordDialog(true)}>Смяна на парола</Button>
                 <Button variant='contained' color='secondary' onClick={closeDialog}>Затвори</Button>
               </Box>
             </>
       }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
+      { showPasswordDialog ? <PasswordDialog closeFunc={setShowPasswordDialog} authError={authError} /> : null }
     </Dialog>
   )
 }

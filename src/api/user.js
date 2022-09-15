@@ -23,3 +23,12 @@ export const changeProfileName = async (body) => {
     body: JSON.stringify(body)
   })
 }
+
+
+export const changePassword = async (body) => {
+  return fetch(`${API}/user/password`, {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify(body)
+  })
+}
