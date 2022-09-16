@@ -32,3 +32,12 @@ export const changePassword = async (body) => {
     body: JSON.stringify(body)
   })
 }
+
+
+export const createNewUser = async (body) => {
+  return fetch(`${API}/user/create`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify(body)
+  })
+}

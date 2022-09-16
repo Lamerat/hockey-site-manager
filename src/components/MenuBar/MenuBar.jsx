@@ -1,16 +1,18 @@
 import React,{ useState, useContext } from 'react'
 import { AppBar, Toolbar, IconButton, Box, Menu, MenuItem, Divider, ListItemIcon, ListItemText } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { getCredentials } from '../../config/storage'
+import { menuPaperStyle } from './Styles'
 import StyledTab from './StyledTab'
 import StyledTabs from './StyledTabs'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { menuPaperStyle } from './Styles'
 import PersonIcon from '@mui/icons-material/Person'
 import LogoutIcon from '@mui/icons-material/Logout'
 import SharedContext from '../../context/SharedContext'
 import UserContext from '../../context/UserContext'
-import { getCredentials } from '../../config/storage'
 import MyProfileDialog from './MyProfileDialog'
+import AddCircleIcon from '@mui/icons-material/AddCircle'
+import AddUser from './AddUser'
 
 
 const MenuBar = () => {
@@ -19,6 +21,7 @@ const MenuBar = () => {
   
   const [anchorEl, setAnchorEl] = useState(null)
   const [showProfile, setShowProfile] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
 
   const history = useNavigate()
 
@@ -67,7 +70,7 @@ const MenuBar = () => {
           sx={{pl: 2, pr: 2 }}
           primary={user.name}
           secondary={user.team?.name}
-          primaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk'}}}
+          primaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk', mb: 0.3}}}
           secondaryTypographyProps={{sx: {fontFamily: 'CorsaGrotesk'}}}
         />        
         <Divider />
@@ -77,6 +80,12 @@ const MenuBar = () => {
           </ListItemIcon>
             Моят профил
         </MenuItem>
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk'}} onClick={() => setShowAddDialog(true)}>
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
+            <AddCircleIcon fontSize='small' />
+          </ListItemIcon>
+            Добави потребител
+        </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk'}} onClick={logOutFromServer}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}>
             <LogoutIcon fontSize='small'/>
@@ -85,6 +94,7 @@ const MenuBar = () => {
         </MenuItem>
       </Menu>
       { showProfile ? <MyProfileDialog closeFunc={setShowProfile}/> : null }
+      { showAddDialog ? <AddUser closeFunc={setShowAddDialog} /> : null }
     </AppBar>
   )
 }

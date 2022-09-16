@@ -27,7 +27,7 @@ const ErrorDialog = ({ text, closeFunc }) => {
         <Button onClick={() => closeFunc({ show: false, message: '' })}>Затвори</Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 }
 
 export default ErrorDialog
