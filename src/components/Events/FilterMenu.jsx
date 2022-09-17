@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Menu, FormControl, InputLabel, Select, OutlinedInput, MenuItem, Checkbox, ListItemText, TextField, Button, InputAdornment } from '@mui/material'
+import { Box, Menu, FormControl, InputLabel, Select, OutlinedInput, MenuItem, Checkbox, ListItemText, TextField, Button, InputAdornment, Stack } from '@mui/material'
 import { eventTranslation } from '../../config/constants'
 import { menuPaperStyle, searchMenuProps } from './Event.styles'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
@@ -45,7 +45,7 @@ const FilterMenu = ({ searchMenuRef, filterData, openMenu, setOpenMenu, addFilte
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
     >
-      <Box p={2} maxWidth='300px' minWidth='300px'>
+      <Box p={2} maxWidth='400px' minWidth='400px'>
         <FormControl fullWidth>
           <InputLabel size='small'>Тип</InputLabel>
           <Select
@@ -64,68 +64,75 @@ const FilterMenu = ({ searchMenuRef, filterData, openMenu, setOpenMenu, addFilte
             }
           </Select>
         </FormControl>
-        <DatePicker
-          selected={filters.startDate}
-          onChange={(date) => changeStartDate(date)}
-          maxDate={new Date()}
-          dateFormat='dd-MM-yyyy'
-          customInput={
-            <TextField
-              size='small'
-              fullWidth
-              label='Начална дата'
-              variant='outlined'
-              InputProps={{ autoComplete: 'off', endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2}} color='primary' /></InputAdornment>) }}
-              sx={{mt: 2}}
-            />
-          }
-        />
-        <DatePicker
-          selected={filters.endDate}
-          onChange={(date) => changeEndDate(date)}
-          maxDate={new Date()}
-          minDate={new Date(filters.startDate)}
-          dateFormat='dd-MM-yyyy'
-          customInput={
-            <TextField
-              size='small'
-              InputLabelProps={{sx: {zIndex: 0}}}
-              fullWidth
-              label='Крайна дата'
-              variant='outlined'
-              InputProps={{ autoComplete: 'off', endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2}} color='primary' /></InputAdornment>) }}
-              sx={{mt: 3}}
-            />
-          }
-        />
-        <FormControl fullWidth sx={{mt: 3}} size='small'>
-          <InputLabel sx={{zIndex: 0}}>Домакин</InputLabel>
-          <Select value={filters.homeTeam} label='Домакин' onChange={(e) => setFilters({ ...filters, homeTeam: e.target.value })}>
-            <MenuItem value=''>Изчисти</MenuItem>
-            { filterData.homeTeam.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
-          </Select>
-        </FormControl>
-        <FormControl fullWidth sx={{mt: 3}} size='small'>
-          <InputLabel sx={{zIndex: 0}}>Гост</InputLabel>
-          <Select value={filters.visitorTeam} label='Гост' onChange={(e) => setFilters({ ...filters, visitorTeam: e.target.value })}>
-            <MenuItem value=''>Изчисти</MenuItem>
-            { filterData.visitorTeam.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
-          </Select>
-        </FormControl>
-        <FormControl fullWidth sx={{mt: 3}} size='small'>
-          <InputLabel sx={{zIndex: 0}}>Пързалка</InputLabel>
-          <Select value={filters.arena} label='Пързалка' onChange={(e) => setFilters({ ...filters, arena: e.target.value })}>
-            <MenuItem value=''>Изчисти</MenuItem>
-            { filterData.arena.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
-          </Select>
-        </FormControl>
-        <FormControl fullWidth sx={{mt: 3}} size='small'>
-          <InputLabel sx={{zIndex: 0}}>Град</InputLabel>
-          <Select value={filters.city} label='Град' onChange={(e) => setFilters({ ...filters, city: e.target.value })}>
-            <MenuItem value=''>Изчисти</MenuItem>
-            { filterData.city.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
-          </Select>
-        </FormControl>
+        <Stack direction='row' spacing={0} mt={3}>
+          <DatePicker
+            selected={filters.startDate}
+            onChange={(date) => changeStartDate(date)}
+            maxDate={new Date()}
+            dateFormat='dd-MM-yyyy'
+            customInput={
+              <TextField
+                size='small'
+                fullWidth
+                label='Начална дата'
+                variant='outlined'
+                InputProps={{ autoComplete: 'off', endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2}} color='primary' /></InputAdornment>) }}
+              />
+            }
+          />
+          <Box minWidth={24}></Box>
+          <DatePicker
+            selected={filters.endDate}
+            onChange={(date) => changeEndDate(date)}
+            maxDate={new Date()}
+            minDate={new Date(filters.startDate)}
+            dateFormat='dd-MM-yyyy'
+            customInput={
+              <TextField
+                size='small'
+                InputLabelProps={{sx: {zIndex: 0}}}
+                fullWidth
+                label='Крайна дата'
+                variant='outlined'
+                InputProps={{ autoComplete: 'off', endAdornment: (<InputAdornment position='start'><CalendarMonthIcon sx={{mr: -2}} color='primary' /></InputAdornment>) }}
+              />
+            }
+          />
+        </Stack>
+        <Stack direction='row' spacing={0} mt={3}>
+          <FormControl fullWidth size='small'>
+            <InputLabel sx={{zIndex: 0}}>Домакин</InputLabel>
+            <Select value={filters.homeTeam} label='Домакин' onChange={(e) => setFilters({ ...filters, homeTeam: e.target.value })}>
+              <MenuItem value=''>Изчисти</MenuItem>
+              { filterData.homeTeam.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
+            </Select>
+          </FormControl>
+          <Box minWidth={24}></Box>
+          <FormControl fullWidth size='small'>
+            <InputLabel sx={{zIndex: 0}}>Гост</InputLabel>
+            <Select value={filters.visitorTeam} label='Гост' onChange={(e) => setFilters({ ...filters, visitorTeam: e.target.value })}>
+              <MenuItem value=''>Изчисти</MenuItem>
+              { filterData.visitorTeam.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
+            </Select>
+          </FormControl>
+        </Stack>
+        <Stack direction='row' spacing={0} mt={3}>
+          <FormControl fullWidth size='small'>
+            <InputLabel sx={{zIndex: 0}}>Пързалка</InputLabel>
+            <Select value={filters.arena} label='Пързалка' onChange={(e) => setFilters({ ...filters, arena: e.target.value })}>
+              <MenuItem value=''>Изчисти</MenuItem>
+              { filterData.arena.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
+            </Select>
+          </FormControl>
+          <Box minWidth={24}></Box>
+          <FormControl fullWidth size='small'>
+            <InputLabel sx={{zIndex: 0}}>Град</InputLabel>
+            <Select value={filters.city} label='Град' onChange={(e) => setFilters({ ...filters, city: e.target.value })}>
+              <MenuItem value=''>Изчисти</MenuItem>
+              { filterData.city.map(x => <MenuItem key={x._id} value={x._id}>{x.name}</MenuItem>) }
+            </Select>
+          </FormControl>
+        </Stack>
         <FormControl fullWidth sx={{mt: 3}} size='small'>
           <InputLabel sx={{zIndex: 0}}>Създал</InputLabel>
           <Select value={filters.createdBy} label='Създал' onChange={(e) => setFilters({ ...filters, createdBy: e.target.value })}>

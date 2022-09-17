@@ -1,17 +1,21 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { Paper, Box, Typography, IconButton, Grid, ListItemIcon, CardMedia, Menu, MenuItem, TextField } from '@mui/material'
+import { Paper, Box, Typography, IconButton, Grid, ListItemIcon, CardMedia, Menu, MenuItem, TextField, Snackbar } from '@mui/material'
+import MuiAlert from '@mui/material/Alert'
 import { useNavigate } from 'react-router-dom'
 import mainTheme from '../../theme/MainTheme'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { menuPaperStyleSmall } from './Media.styles'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ShareIcon from '@mui/icons-material/Share'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
 import { changeNameRequest } from '../../api/photo'
 import { cleanCredentials } from '../../config/storage'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />;
+})
 
 const TextFieldInput = { disableUnderline: true, sx: { fontSize: '12px', letterSpacing: '0.03333em', fontFamily: 'CorsaGrotesk' }}
 
@@ -23,6 +27,7 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
   const [openMenu, setOpenMenu] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [name, setName] = useState(row.name || `Снимка ${row.position}`)
+  const [snackOpen, setSnackOpen] = useState(false)
 
   const opacity = globalEdit && !editMode ? 0.2 : 1
   const history = useNavigate()
@@ -68,6 +73,16 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
         setEditMode(false)
       })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+    setSnackOpen(true)
+  }
+
+  const closeSnack = (event, reason) => {
+    if (reason === 'clickaway') return
+    setSnackOpen(false)
   }
 
   return (
@@ -118,15 +133,18 @@ const PhotoComponent = ({ row, imageSize, setStartPosition, changePositionFunc, 
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><EditIcon fontSize='small' color='primary'/></ListItemIcon>
           Промени име
         </MenuItem>
-        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => 1}>
-          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><ShareIcon fontSize='small' color='primary'/></ListItemIcon>
-          Сподели
+        <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => copyToClipboard(row.address)}>
+          <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><ContentCopyIcon fontSize='small' color='primary'/></ListItemIcon>
+          Копирай адреса
         </MenuItem>
         <MenuItem sx={{fontFamily: 'CorsaGrotesk',  fontSize: '14px'}} onClick={() => deleteFunc(row._id, name)}>
           <ListItemIcon sx={{ml: -0.5, minWidth: '30px !important'}}><DeleteIcon fontSize='small' color='error'/></ListItemIcon>
           Изтрий
         </MenuItem>
       </Menu>
+      <Snackbar open={snackOpen} autoHideDuration={2000} onClose={closeSnack}>
+        <Alert onClose={closeSnack} severity='success' sx={{ width: '100%' }}>Адресът е копиран в клипборда</Alert>
+      </Snackbar>
     </Grid>
   )
 }
