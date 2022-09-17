@@ -42,7 +42,10 @@ const AddNews = () => {
 
     uploadFiles(formData)
       .then(x => x.json())
-      .then(result => field === 'main' ? setMainPhoto(result.payload[0]) : setPhotos([...result.payload, ...photos]))
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        field === 'main' ? setMainPhoto(result.payload[0]) : setPhotos([...result.payload, ...photos])
+      })
       .catch(error => setErrorDialog({ show: true, message: error.message }))
   }
 

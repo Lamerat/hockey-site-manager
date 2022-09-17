@@ -63,7 +63,10 @@ const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
     formData.append('images', file[0])
     uploadFiles(formData)
       .then(x => x.json())
-      .then(result => setTeam({ ...team, logo: result.payload[0].url }))
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setTeam({ ...team, logo: result.payload[0].url })
+      })
       .catch(error => {
         setTeam({ ...team, logo: null })
         setErrorDialog({ show: true, message: error.message })
