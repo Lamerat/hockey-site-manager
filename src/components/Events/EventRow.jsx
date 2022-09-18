@@ -9,7 +9,7 @@ const EventRow = ({ row, actionFunc }) => {
   const anchorPopover = useRef(null)
 
   const score = row.type === 'game' && row.finalScore.home ? `${row.finalScore.home} : ${row.finalScore.visitor}` : ' - '
-  const overtime = row.type === 'game' && row.finalScore.home && row?.overtime !== 'draw'
+  const overtime = row.type === 'game' && row.finalScore.home && row.overtime && row.overtime !== 'draw'
     ? row?.overtime === 'overtime' ? '(пр)' : '(д)'
     : null
 
