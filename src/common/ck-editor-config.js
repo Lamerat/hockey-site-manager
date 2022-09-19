@@ -9,7 +9,7 @@ export const editorConfig = {
       { name: 'other', items: ['Maximize'] }
   ],
   removeButtons: 'Subscript,Superscript',
-  enterMode: 2,
+  enterMode: 'ENTER_BR',
   plugins: [
       'basicstyles',
       'clipboard',
