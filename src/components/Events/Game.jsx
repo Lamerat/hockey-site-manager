@@ -137,8 +137,10 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
     }
 
     if (Number(event.finalScore.home) === Number(event.finalScore.visitor) && event.overtime !== 'draw') {
-      setErrorDialog({ show: true, message: 'При продължение или наказателни удари трябва да има победител!' })
-      return
+      if (!isNaN(parseInt(event.finalScore.home)) || !isNaN(parseInt(event.finalScore.visitor))) {
+        setErrorDialog({ show: true, message: 'При продължение или наказателни удари трябва да има победител!' })
+        return
+      }
     }
 
     if (![event.homeTeam, event.visitorTeam].includes(user.team._id)) {
@@ -161,9 +163,10 @@ const Game = ({ data, addFunction, closeFunc, editFunction, deleteFunc }) => {
       secondThird: event.secondThird,
       thirdThird: event.thirdThird,
       finalScore: event.finalScore,
-      description: htmlData
+      description: htmlData,
+      overtime: null
     }
-    if (homeScore === visitorScore) body.overtime = event.overtime
+    if (homeScore === visitorScore && !isNaN(parseInt(event.finalScore.home))) body.overtime = event.overtime
     if (data && data._id) body._id = data._id
 
     if (!editMode) {
