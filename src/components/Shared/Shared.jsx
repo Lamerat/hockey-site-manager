@@ -343,7 +343,7 @@ const Shared = () => {
       firstRenderSharedRef.current = false
       return
     }
-    setShared(shared => ({ ...shared, currentPage: 4 }))
+    setShared(shared => ({ ...shared, currentPage: 6 }))
   }, [setShared])
 
 

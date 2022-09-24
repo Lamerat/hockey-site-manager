@@ -14,6 +14,7 @@ import Media from './components/Media/Media'
 import Login from './components/Login/Login'
 import AddNews from './components/AddNews/AddNews'
 import EditNews from './components/EditNews/EditNews'
+import Information from './components/Information/Information'
 
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
               <Route exact path='/events' element={<Events />} />
               <Route exact path='/players' element={<Players />} />
               <Route exact path='/media' element={<Media />} />
+              <Route exact path='/information' element={<Information />} />
               <Route exact path='/shared' element={<Shared />} />
             </Routes>
           </BrowserRouter>
