@@ -46,7 +46,7 @@ const InformationPreview = ({articleId, closeFunc}) => {
           : <>
               <Box display='flex' alignItems='center' justifyContent='space-between' borderBottom={1} borderColor={borderColor} m={2} mb={0}>
                 <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>{articleData.longTitle}</Typography>
-                <IconButton size='small' onClick={() => closeFunc({ show: false })}><CloseIcon color='secondary' /></IconButton>
+                <IconButton size='small' onClick={() => closeFunc({ show: false })} sx={{mr: -1}}><CloseIcon color='secondary' /></IconButton>
               </Box>
               <Scrollbars autoHeight autoHeightMin={100} autoHeightMax='calc(100vh - 175px)'>
               <Box p={2} fontFamily='CorsaGrotesk' fontSize='13px'>
