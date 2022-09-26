@@ -9,6 +9,7 @@ import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { login } from '../../api/user'
 import { getCredentials, storeCredentials } from '../../config/storage'
 import LoadingButton from '@mui/lab/LoadingButton';
+import { DEV_MODE } from '../../config/constants'
 
 
 const Login = () => {
@@ -65,7 +66,7 @@ const Login = () => {
   }
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
     }
 

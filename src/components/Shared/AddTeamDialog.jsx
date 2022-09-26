@@ -12,6 +12,7 @@ import { listCities } from '../../api/city'
 import CircularProgress from '@mui/material/CircularProgress'
 import { uploadFiles } from '../../api/files'
 import moment from 'moment'
+import { DEV_MODE } from '../../config/constants'
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
@@ -38,7 +39,7 @@ const AddTeamDialog = ({data, editMode, actionFunc, closeFunc}) => {
   }
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

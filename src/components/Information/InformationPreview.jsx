@@ -9,6 +9,7 @@ import { singleArticleRequest } from '../../api/article'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import CloseIcon from '@mui/icons-material/Close'
 import parse from 'html-react-parser'
+import { DEV_MODE } from '../../config/constants'
 
 const borderColor = mainTheme.palette.secondary.main
 
@@ -24,7 +25,7 @@ const InformationPreview = ({articleId, closeFunc}) => {
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

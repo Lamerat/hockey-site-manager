@@ -19,6 +19,7 @@ import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import LinearProgress from '@mui/material/LinearProgress'
 import PreviewDialog from './PreviewDialog'
+import { DEV_MODE } from '../../config/constants'
 
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false,  hasNextPage: false, sort: { createdAt: -1 }, search: '', searchFields: [], startDate: null, endDate: null }
@@ -44,7 +45,7 @@ const News = () => {
   const history = useNavigate()
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }
@@ -161,7 +162,7 @@ const News = () => {
 
 
   useEffect(() => {
-    if(firstRenderSharedRef.current) {
+    if (firstRenderSharedRef.current && DEV_MODE) {
       firstRenderSharedRef.current = false
       return
     }

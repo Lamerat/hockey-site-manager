@@ -10,6 +10,7 @@ import { Box, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import { listCities } from '../../api/city'
 import CircularProgress from '@mui/material/CircularProgress'
+import { DEV_MODE } from '../../config/constants'
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
@@ -33,7 +34,7 @@ const AddArenaDialog = ({actionFunc, closeFunc}) => {
   }
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

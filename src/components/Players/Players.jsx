@@ -22,6 +22,7 @@ import PlayerFilterMenu from './PlayerFilterMenu'
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
+import { DEV_MODE } from '../../config/constants'
 
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false, hidden: true,  hasNextPage: false, sort: { number: 1 }, search: '' }
@@ -49,7 +50,7 @@ const Players = () => {
 
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }
@@ -219,7 +220,7 @@ const Players = () => {
   }
   
   useEffect(() => {
-    if(firstRenderSharedRef.current) {
+    if (firstRenderSharedRef.current && DEV_MODE) {
       firstRenderSharedRef.current = false
       return
     }

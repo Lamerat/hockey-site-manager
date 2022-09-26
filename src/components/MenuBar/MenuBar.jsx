@@ -50,7 +50,7 @@ const MenuBar = () => {
             <StyledTab label='Играчи' name='/players' />
             <StyledTab label='Медия' name='/media' />
             <StyledTab label='Статии' name='/information' />
-            <StyledTab label='Банери' name='/shared' />
+            <StyledTab label='Банери' name='/banners' />
             <StyledTab label='Споделени' name='/shared' />
           </StyledTabs>
         </Box>

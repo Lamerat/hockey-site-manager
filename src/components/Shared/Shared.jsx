@@ -21,6 +21,7 @@ import { listArenas, createArena, deleteArena, singleArena, editArena } from '..
 import EditArenaDialog from './EditArenaDialog'
 import AddTeamDialog from './AddTeamDialog'
 import { createTeam, deleteTeam, listTeams, singleTeam, editTeam } from '../../api/team'
+import { DEV_MODE } from '../../config/constants'
 
 
 const Shared = () => {
@@ -53,7 +54,7 @@ const Shared = () => {
 
   // Load cities
   useEffect(() => {
-    if(firstRenderCityRef.current) {
+    if (firstRenderCityRef.current && DEV_MODE) {
       firstRenderCityRef.current = false
       return
     }
@@ -79,7 +80,7 @@ const Shared = () => {
 
   // Load arenas
   useEffect(() => {
-    if(firstRenderArenaRef.current) {
+    if (firstRenderArenaRef.current && DEV_MODE) {
       firstRenderArenaRef.current = false
       return
     }
@@ -105,7 +106,7 @@ const Shared = () => {
 
   // Load teams
   useEffect(() => {
-    if(firstRenderTeamRef.current) {
+    if (firstRenderTeamRef.current && DEV_MODE) {
       firstRenderTeamRef.current = false
       return
     }
@@ -339,7 +340,7 @@ const Shared = () => {
 
 
   useEffect(() => {
-    if(firstRenderSharedRef.current) {
+    if (firstRenderSharedRef.current && DEV_MODE) {
       firstRenderSharedRef.current = false
       return
     }

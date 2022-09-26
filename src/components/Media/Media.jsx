@@ -20,6 +20,7 @@ import PhotoComponent from './PhotoComponent'
 import AlbumDialog from './AlbumDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import { listPhotosRequest, uploadPhotosRequest, changePositionsRequest, deletePhotoRequest, changePhotoAlbumRequest } from '../../api/photo'
+import { DEV_MODE } from '../../config/constants'
 
 
 const imageSizeConst = {
@@ -58,7 +59,7 @@ const Media = () => {
 
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }
@@ -317,7 +318,7 @@ const Media = () => {
 
 
   useEffect(() => {
-    if(firstRenderSharedRef.current) {
+    if (firstRenderSharedRef.current && DEV_MODE) {
       firstRenderSharedRef.current = false
       return
     }

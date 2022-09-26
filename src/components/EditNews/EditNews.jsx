@@ -17,6 +17,7 @@ import IOSSwitch from '../IOSwitch/IOSwitch'
 import { editNewsRequest, singleNewsRequest } from '../../api/news'
 import { getCredentials, cleanCredentials } from '../../config/storage'
 import ImagePreview from '../StyledElements/ImagePreview'
+import { DEV_MODE } from '../../config/constants'
 
 const initialNewsData = {}
 
@@ -110,7 +111,7 @@ const EditNews = () => {
   }
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

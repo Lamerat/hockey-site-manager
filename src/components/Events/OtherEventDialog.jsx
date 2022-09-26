@@ -23,6 +23,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import parse from 'html-react-parser'
 import sanitizeHtml from 'sanitize-html'
 import 'react-datepicker/dist/react-datepicker.css'
+import { DEV_MODE } from '../../config/constants'
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
@@ -47,7 +48,7 @@ const OtherEventDialog = ({ data, addFunction, closeFunc, editFunction, deleteFu
 
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

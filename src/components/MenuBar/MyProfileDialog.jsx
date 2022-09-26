@@ -18,6 +18,7 @@ import ClearIcon from '@mui/icons-material/Clear'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import PasswordDialog from './PasswordDialog'
+import { DEV_MODE } from '../../config/constants'
 
 
 const titleStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }
@@ -57,7 +58,7 @@ const MyProfileDialog = ({ closeFunc }) => {
   }
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

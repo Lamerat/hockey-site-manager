@@ -9,6 +9,7 @@ import parse from 'html-react-parser'
 import { photoStyle } from './News.styles'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import CloseIcon from '@mui/icons-material/Close'
+import { DEV_MODE } from '../../config/constants'
 
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -22,7 +23,7 @@ const PreviewDialog = ({newsId, closeFunc}) => {
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

@@ -16,6 +16,7 @@ import AddNews from './components/AddNews/AddNews'
 import EditNews from './components/EditNews/EditNews'
 import Information from './components/Information/Information'
 import InformationAddEdit from './components/Information/InformationAddEdit'
+import BannerPage from './components/BannerPage/BannerPage'
 
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
               <Route exact path='/information' element={<Information />} />
               <Route exact path='/information/create' element={<InformationAddEdit editMode={false} />} />
               <Route exact path='/information/:id' element={<InformationAddEdit editMode={true} />} />
+              <Route exact path='/banners' element={<BannerPage />} />
               <Route exact path='/shared' element={<Shared />} />
             </Routes>
           </BrowserRouter>

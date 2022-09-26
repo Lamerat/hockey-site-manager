@@ -11,6 +11,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import sanitizeHtml from 'sanitize-html'
+import { DEV_MODE } from '../../config/constants'
 
 const defaultArticle = {
   shortTitle: { value: '', error: false },
@@ -44,7 +45,7 @@ const InformationAddEdit = ({ editMode }) => {
   useEffect(() => {
     if (!editMode) return
 
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }

@@ -25,6 +25,7 @@ import moment from 'moment'
 import Training from './Training'
 import Game from './Game'
 import FilterMenu from './FilterMenu'
+import { DEV_MODE } from '../../config/constants'
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false, hidden: true,  hasNextPage: false, sort: { date: -1 } }
 let allowedTypes = []
@@ -53,7 +54,7 @@ const Events = () => {
   const history = useNavigate()
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }
@@ -297,7 +298,7 @@ const Events = () => {
 
 
   useEffect(() => {
-    if(firstRenderRef.current) {
+    if (firstRenderRef.current && DEV_MODE) {
       firstRenderRef.current = false
       return
     }
