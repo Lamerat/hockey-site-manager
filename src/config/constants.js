@@ -1,7 +1,7 @@
 export const API = 'https://hockey-site-dev.herokuapp.com'
 // export const API = 'http://localhost:5000'
 
-export const DEV_MODE = true
+export const DEV_MODE = false
 
 export const newsSearchFields = ['title', 'text', 'author']
 
