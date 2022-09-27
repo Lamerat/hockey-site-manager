@@ -10,35 +10,27 @@ export const listBanners = async (body) => {
 }
 
 
-// export const createArticleRequest = async (body) => {
-//   return fetch(`${API}/info/create`, {
-//     method: 'POST',
-//     headers: headers(),
-//     body: JSON.stringify(body),
-//   })
-// }
+export const createBannerRequest = async (body) => {
+  return fetch(`${API}/banner/create`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify(body),
+  })
+}
 
 
-// export const singleArticleRequest = async (id) => {
-//   return fetch(`${API}/info/${id}`, {
-//     method: 'GET',
-//     headers: headers(),
-//   })
-// }
+export const editBannerRequest = async (id, body) => {
+  return fetch(`${API}/banner/${id}`, {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify(body),
+  })
+}
 
 
-// export const editArticleRequest = async (id, body) => {
-//   return fetch(`${API}/info/${id}`, {
-//     method: 'PUT',
-//     headers: headers(),
-//     body: JSON.stringify(body),
-//   })
-// }
-
-
-// export const deleteArticleRequest = async (id) => {
-//   return fetch(`${API}/info/${id}`, {
-//     method: 'DELETE',
-//     headers: headers()    
-//   })
-// }
+export const deleteBannerRequest = async (id) => {
+  return fetch(`${API}/banner/${id}`, {
+    method: 'DELETE',
+    headers: headers()    
+  })
+}

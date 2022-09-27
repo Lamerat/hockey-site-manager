@@ -1,10 +1,12 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Container, Paper, Box, Typography, IconButton, Tooltip, Stack } from '@mui/material'
-import SharedContext from '../../context/SharedContext'
 import { useNavigate } from 'react-router-dom'
 import { sortBox, sortLabel, rotateAngle } from '../../common/sortStyles'
 import { Scrollbars } from 'react-custom-scrollbars-2'
 import { getCredentials, cleanCredentials } from '../../config/storage'
+import { listBanners, createBannerRequest, editBannerRequest, deleteBannerRequest } from '../../api/banner'
+import { DEV_MODE } from '../../config/constants'
+import SharedContext from '../../context/SharedContext'
 import UserContext from '../../context/UserContext'
 import mainTheme from '../../theme/MainTheme'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
@@ -13,8 +15,6 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import ErrorDialog from '../ErrorDialog/ErrorDialog'
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog'
 import LinearProgress from '@mui/material/LinearProgress'
-import { DEV_MODE } from '../../config/constants'
-import { listBanners } from '../../api/banner'
 import BannerRow from './BannerRow'
 import BannerDialog from './BannerDialog'
 
@@ -90,6 +90,82 @@ const BannerPage = () => {
   }
 
 
+  const authError = () => {
+    cleanCredentials()
+    history('/')
+  }
+
+
+  const createBanner = (body) => {
+    createBannerRequest(body)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        query.pageNumber === 1
+          ? setReloadList(!reloadList)
+          : setQuery({ ...query, pageNumber: 1 })
+        setShowBannerDialog({ show: false, data: null })
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const prepareEditBanner = (row) => {
+    const data = {
+      position: { value: row.position, error: false },
+      link: { value: row.link, error: false },
+      text: { value: row.text, error: false },
+      photo: { value: row.photo, error: false },
+      _id: row._id
+    }
+    setShowBannerDialog({ show: true, data })
+  }
+
+
+  const updateBanner = (id, body) => {
+    editBannerRequest(id, body)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        const updateBanners = banners.map(x => x._id === result.payload._id ? result.payload : x)
+        setShowBannerDialog({ show: false, data: null })
+        body.position
+          ? setReloadList(!reloadList)
+          : setBanners(updateBanners)
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
+  const prepareDeleteBanner = (id, text) => {
+    setConfirmDialog({ show: true, message: `Сигурни ли сте, че искате да изтриете банер "${text}"`, acceptFunc: () => deleteBanner(id) })
+  }
+
+
+  const deleteBanner = (bannerId) => {
+    deleteBannerRequest(bannerId)
+      .then(x => {
+        if (x.status === 401) authError()
+        return x.json()
+      })
+      .then(result => {
+        if (!result.success) throw new Error(result.message)
+        setShowBannerDialog({ show: false, data: null })
+        setConfirmDialog({ show: false, message: '' })
+        query.hasNextPage
+          ? query.pageNumber === 1 ? setReloadList(!reloadList) : setQuery({ ...query, pageNumber: 1, hasNextPage: false })
+          : setBanners(banners.filter(x => x._id !== result.payload._id))
+      })
+      .catch(error => setErrorDialog({ show: true, message: error.message }))
+  }
+
+
   useEffect(() => {
     if (firstRenderSharedRef.current && DEV_MODE) {
       firstRenderSharedRef.current = false
@@ -131,7 +207,7 @@ const BannerPage = () => {
                   onScroll={({ target }) => handlePagination(target.scrollTop, target.getBoundingClientRect().height, target.scrollHeight)}
                 >
                   <Box p={2} pt={0}>
-                    { banners.map(x => <BannerRow key={x._id} row={x} />) }
+                    { banners.map(x => <BannerRow key={x._id} row={x} editFunc={prepareEditBanner} deleteFunction={prepareDeleteBanner} />) }
                   </Box>
                 </Scrollbars>
               : <Box m={2} textAlign='center'>Няма намерени записи</Box>
@@ -142,7 +218,12 @@ const BannerPage = () => {
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
       {
         showBannerDialog.show
-          ? <BannerDialog data={showBannerDialog.data} closeFunc={setShowBannerDialog} addFunction={() => 1} deleteFunc={() => 1} editFunction={() => 1} />
+          ? <BannerDialog
+              data={showBannerDialog.data}
+              closeFunc={setShowBannerDialog}
+              createFunc={createBanner}
+              editFunc={updateBanner}
+            />
           : null
       }
     </Container>

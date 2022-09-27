@@ -30,7 +30,34 @@ export const menuPaperStyleSmall = {
 export const bannerImageStyle = {
   maxHeight: '55px',
   maxWidth: '143px',
-  backgroundColor: 'black',
+  backgroundColor: '#2b2b2b',
   border: '1px solid black',
   borderRadius: ' 4px'
+}
+
+
+export const dialogBannerStyle = {
+  maxWidth: '200px',
+  maxHeight: '78px',
+  backgroundColor: '#2b2b2b',
+  border: '1px solid black',
+  borderRadius: ' 4px',
+  
+}
+
+
+export const imageEmptyBox = {
+  color: 'black',
+  maxWidth: '184px',
+  maxHeight: '62px',
+  minHeight: '62px',
+  display: 'flex',
+  alignItems: 'center',
+  border: '1px solid black',
+  borderRadius: ' 4px',
+  fontFamily: 'CorsaGrotesk',
+  fontSize: '12px',
+  textAlign: 'center',
+  justifyContent: 'center',
+  p: 1,  
 }
