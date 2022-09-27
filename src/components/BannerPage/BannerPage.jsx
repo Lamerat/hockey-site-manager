@@ -16,6 +16,7 @@ import LinearProgress from '@mui/material/LinearProgress'
 import { DEV_MODE } from '../../config/constants'
 import { listBanners } from '../../api/banner'
 import BannerRow from './BannerRow'
+import BannerDialog from './BannerDialog'
 
 const queryDefault = { pageNumber: 1, pageSize: 20, noPagination: false,  hasNextPage: false, sort: { position: 1 } }
 
@@ -30,6 +31,7 @@ const BannerPage = () => {
   const [query, setQuery] = useState(queryDefault)
   const [banners, setBanners] = useState(null)
   const [reloadList, setReloadList] = useState(false)
+  const [showBannerDialog, setShowBannerDialog] = useState({ show: false, data: null })
   const [errorDialog, setErrorDialog] = useState({ show: false, message: '' })
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '' })
 
@@ -106,7 +108,7 @@ const BannerPage = () => {
           <Typography fontFamily='CorsaGrotesk' color={mainTheme.palette.secondary.main} variant='h6' pb={0.5}>Банери</Typography>
           <Box display='flex' alignItems='center' mr={-1}>
             <Tooltip title='Добави нова' arrow>
-              <IconButton onClick={() => 1}>
+              <IconButton onClick={() => setShowBannerDialog({ show: true, data: null })}>
                 <LibraryAddIcon color='secondary' />
               </IconButton>
             </Tooltip>
@@ -138,6 +140,11 @@ const BannerPage = () => {
       </Paper>
       { errorDialog.show ? <ErrorDialog text={errorDialog.message} closeFunc={setErrorDialog} /> : null }
       { confirmDialog.show ? <ConfirmDialog text={confirmDialog.message} cancelFunc={setConfirmDialog} acceptFunc={confirmDialog.acceptFunc} /> : null }
+      {
+        showBannerDialog.show
+          ? <BannerDialog data={showBannerDialog.data} closeFunc={setShowBannerDialog} addFunction={() => 1} deleteFunc={() => 1} editFunction={() => 1} />
+          : null
+      }
     </Container>
   )
 }
